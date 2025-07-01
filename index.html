@@ -833,6 +833,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // Blok klik kanan
+    alert("Klik kanan dinonaktifkan!");
+  });
     </script>
+    <noscript>
+  <style>
+    body { display: none; }
+  </style>
+  <div>JavaScript harus diaktifkan untuk melihat halaman ini.</div>
+    </noscript>
 </body>
 </html>
