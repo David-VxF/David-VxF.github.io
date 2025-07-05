@@ -342,23 +342,42 @@ FingerprintJS.load().then(fp => {
   });
 });
 </script>
+<h3>🔐 Minta Token Akses</h3>
+<input type="text" id="chat-id-input" placeholder="Masukkan ID Telegram Anda" style="width: 300px;">
+<button onclick="kirimTokenViaBot()">Kirim Token</button>
+
 <script>
-(function() {
-  const validTokens = ["tuan2025", "waifu123"]; // 🗝️ Ganti dengan token rahasia milik Tuan
+async function kirimTokenViaBot() {
+  const chatId = document.getElementById("chat-id-input").value.trim();
+  if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda terlebih dahulu.");
 
-  const existing = localStorage.getItem("access_token");
-  if (existing && validTokens.includes(existing)) return;
+  const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY";
+  const SECRET = "ShirasuAzusaMyIstri"; 
+  const MULAI = new Date("2025-07-01T00:00:00Z");
 
-  const input = prompt("🔐 Halaman ini terkunci. Masukkan Token Akses:");
+  const now = new Date();
+  const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
+  const base = `waifutoken-${jamOffset}-${SECRET}`;
+  const data = new TextEncoder().encode(base);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const token = hex.slice(0, 10);
 
-  if (validTokens.includes(input)) {
-    localStorage.setItem("access_token", input);
-    alert("✅ Akses diberikan!");
+  const waktu = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  const pesan = `🕐 Token Akses Jam ${waktu}:\n🔐 ${token}`;
+
+  const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ chat_id: chatId, text: pesan })
+  });
+
+  if (response.ok) {
+    alert("✅ Token berhasil dikirim ke Telegram Anda!");
   } else {
-    document.body.innerHTML = "<h1 style='color:red;text-align:center;'>🚫 Token salah. Akses ditolak.</h1>";
-    throw new Error("Token tidak valid. Menghentikan script.");
+    alert("❌ Gagal mengirim token. Pastikan ID Telegram benar.");
   }
-})();
+}
 </script>
     <script>
 // History management
