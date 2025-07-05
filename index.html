@@ -228,7 +228,7 @@
 
   async function kirimTokenKeTelegram() {
     const chatId = document.getElementById("chat-id").value.trim();
-    if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
+    if (!chat-id) return alert("⚠️ Masukkan ID Telegram Anda.");
 
     const token = await generateTokenSHA512();
     const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
