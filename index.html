@@ -231,7 +231,6 @@
   return hex;
 }
 
-  // ✅ Fungsi Countdown GLOBAL agar bisa dipakai ulang
 function mulaiCountdown(durasi) {
   const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
   tombol.disabled = true;
@@ -341,182 +340,349 @@ window.addEventListener("DOMContentLoaded", () => {
             color: #fff;
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('background.jpg') center/cover;
+            filter: blur(10px);
+            z-index: -2;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: -1;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             text-align: center;
             margin-bottom: 30px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .header h1 {
             font-size: 2.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #a8e6cf);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
+            animation: gradient-shift 3s ease-in-out infinite;
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
         .toolbar {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            justify-content: center;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .btn {
-            padding: 10px 16px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
-            background: #333;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.3s;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn:hover {
-            background: #555;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-1px) scale(0.98);
+            animation: pulse 0.3s ease-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.98); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(0.98); }
         }
 
         .btn-primary {
-            background: #007bff;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: 1px solid rgba(0, 123, 255, 0.3);
         }
 
         .btn-primary:hover {
-            background: #0056b3;
+            background: linear-gradient(45deg, #0056b3, #004085);
+            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4);
         }
 
         .btn-success {
-            background: #28a745;
+            background: linear-gradient(45deg, #28a745, #1e7e34);
+            border: 1px solid rgba(40, 167, 69, 0.3);
         }
 
         .btn-success:hover {
-            background: #1e7e34;
+            background: linear-gradient(45deg, #1e7e34, #155724);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
         }
 
         .btn-magic {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #a8e6cf);
             color: white;
             font-weight: bold;
+            border: 1px solid rgba(255, 107, 107, 0.3);
         }
 
         .btn-magic:hover {
-            background: linear-gradient(45deg, #e55555, #3fb8b0);
+            background: linear-gradient(45deg, #e55555, #3fb8b0, #95d5b2);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
         }
 
         .btn:disabled {
-            background: #222;
+            background: rgba(255, 255, 255, 0.05);
             color: #666;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
-        .metadata-panel {
-            background: #2d2d2d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .metadata-row {
+        .control-panel {
             display: flex;
             gap: 15px;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-
-        .metadata-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .metadata-row label {
-            min-width: 120px;
-            font-weight: 600;
-        }
-
-        .metadata-row input, .metadata-row select, .metadata-row textarea {
-            flex: 1;
-            padding: 8px 12px;
-            background: #1a1a1a;
-            border: 2px solid #444;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 14px;
-        }
-
-        .metadata-row input:focus, .metadata-row select:focus, .metadata-row textarea:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-
-        .wsp-form {
-            background: #2d2d2d;
-            border-radius: 12px;
-            padding: 20px;
             margin-bottom: 20px;
-            border: 2px solid #ff6b6b;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .wsp-form h3 {
-            color: #ff6b6b;
+        .control-card {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .control-card:hover::before {
+            left: 100%;
+        }
+
+        .control-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .control-card h3 {
             margin-bottom: 15px;
+            color: #4ecdc4;
+            font-size: 1.2rem;
             text-align: center;
         }
 
-        .key-input-container {
-            position: relative;
-        }
-
-        .key-input-container textarea {
-            width: 100%;
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .key-buttons {
+        .icon-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .icon-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        .icon-btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-btn:active {
+            transform: translateY(-2px) scale(1.05);
+            animation: bounce 0.4s ease-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(-2px) scale(1.05); }
+            40% { transform: translateY(-10px) scale(1.1); }
+            80% { transform: translateY(-5px) scale(1.08); }
+        }
+
+        .encryption-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff4757);
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .encryption-btn:hover {
+            background: linear-gradient(45deg, #ff4757, #ff3742);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .signature-btn {
+            background: linear-gradient(45deg, #4ecdc4, #45b7aa);
+            border-color: rgba(78, 205, 196, 0.3);
+        }
+
+        .signature-btn:hover {
+            background: linear-gradient(45deg, #45b7aa, #3fb8b0);
+            box-shadow: 0 15px 30px rgba(78, 205, 196, 0.5);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-label {
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+            color: #ccc;
+            font-weight: 500;
         }
 
         .editor-container {
-            background: #2d2d2d;
-            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .editor-textarea {
             width: 100%;
             height: 400px;
-            background: #1a1a1a;
-            border: 2px solid #444;
-            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
             padding: 15px;
             color: #fff;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.5;
             resize: vertical;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
         .editor-textarea:focus {
             outline: none;
-            border-color: #007bff;
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
         }
 
         .status-bar {
-            background: #333;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .file-input {
@@ -525,51 +691,124 @@ window.addEventListener("DOMContentLoaded", () => {
 
         .alert {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 15px;
             margin-bottom: 15px;
             font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(212, 237, 218, 0.2);
+            color: #d4edda;
         }
 
         .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(248, 215, 218, 0.2);
+            color: #f8d7da;
         }
 
         .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: rgba(209, 236, 241, 0.2);
+            color: #d1ecf1;
         }
 
-        .encryption-note {
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 12px;
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h3 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-form label {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .modal-form input, .modal-form textarea {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-form input:focus, .modal-form textarea:focus {
+            outline: none;
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .close {
             color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #fff;
         }
 
         @media (max-width: 768px) {
             .toolbar {
                 flex-direction: column;
+                gap: 10px;
             }
 
-            .metadata-row {
+            .control-panel {
                 flex-direction: column;
-                align-items: stretch;
             }
 
-            .metadata-row label {
-                min-width: auto;
-                margin-bottom: 5px;
+            .btn-row {
+                flex-wrap: wrap;
             }
 
             .status-bar {
@@ -577,8 +816,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 gap: 10px;
             }
 
-            .key-buttons {
-                flex-direction: column;
+            .header h1 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -601,39 +840,17 @@ window.addEventListener("DOMContentLoaded", () => {
             <button class="btn" id="redoBtn" onclick="redo()" disabled>↷ Redo</button>
         </div>
 
-        <div class="metadata-panel">
-            <h3 style="margin-bottom: 15px;">🔐 Enkripsi & Keamanan</h3>
-            <div class="metadata-row">
-                <label>Encryption Key:</label>
-                <div class="key-input-container">
-                    <textarea id="encryptionKey" placeholder="Masukkan key enkripsi (kosongkan untuk tidak mengenkripsi)..." rows="3"></textarea>
-                    <div class="key-buttons">
-                        <button class="btn btn-magic" onclick="generateRandomKey()">🎲 Generate Random Key</button>
-                        <button class="btn" onclick="clearKey()">🗑️ Clear Key</button>
+        <div class="control-panel">
+            <div class="control-card">
+                <h3>🔐 Keamanan</h3>
+                <div class="btn-row">
+                    <div>
+                        <button class="icon-btn encryption-btn" onclick="openEncryptionModal()">🔒</button>
+                        <div class="btn-label">Enkripsi</div>
                     </div>
-                    <div class="encryption-note">
-                        💡 Tip: Jika key kosong, file tidak akan dienkripsi. Key yang sama diperlukan untuk membuka file.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="wsp-form">
-            <h3>✨ Waifu Signature Protocol ✨</h3>
-            <div class="metadata-row">
-                <label>Nama Waifu:</label>
-                <input type="text" id="waifu-name" placeholder="Misal: Shirasu Azusa(waifu admin)" maxlength="100">
-            </div>
-            <div class="metadata-row">
-                <label>Nama Author:</label>
-                <input type="text" id="author-name" placeholder="Misal: Maulana Aziz" maxlength="100">
-            </div>
-            <div class="metadata-row">
-                <label>Private Key (Soul Key):</label>
-                <div class="key-input-container">
-                    <textarea id="wsp-private-key" rows="3" placeholder="Tulis sendiri atau buat otomatis..."></textarea>
-                    <div class="key-buttons">
-                        <button class="btn btn-magic" onclick="generateMoePrivateKey()">✨ Buat Private Key Moe ✨</button>
+                    <div>
+                        <button class="icon-btn signature-btn" onclick="openSignatureModal()">✨</button>
+                        <div class="btn-label">Signature</div>
                     </div>
                 </div>
             </div>
@@ -655,7 +872,49 @@ window.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>
     </div>
-<div>
+
+    <!-- Encryption Modal -->
+    <div id="encryptionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEncryptionModal()">&times;</span>
+            <h3>🔐 Pengaturan Enkripsi</h3>
+            <div class="modal-form">
+                <label for="encryptionKey">Encryption Key:</label>
+                <textarea id="encryptionKey" placeholder="Masukkan key enkripsi (kosongkan untuk tidak mengenkripsi)..." rows="3"></textarea>
+                <div class="modal-buttons">
+                    <button class="btn btn-magic" onclick="generateRandomKey()">🎲 Generate Random Key</button>
+                    <button class="btn" onclick="clearKey()">🗑️ Clear Key</button>
+                    <button class="btn btn-success" onclick="saveEncryptionSettings()">✅ Simpan</button>
+                </div>
+                <div style="font-size: 12px; color: #aaa; margin-top: 10px; text-align: center;">
+                    💡 Tip: Jika key kosong, file tidak akan dienkripsi. Key yang sama diperlukan untuk membuka file.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signature Modal -->
+    <div id="signatureModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSignatureModal()">&times;</span>
+            <h3>✨ Waifu Signature Protocol ✨</h3>
+            <div class="modal-form">
+                <label for="waifu-name">Nama Waifu:</label>
+                <input type="text" id="waifu-name" placeholder="Misal: Shirasu Azusa(waifu admin)" maxlength="100">
+                
+                <label for="author-name">Nama Author:</label>
+                <input type="text" id="author-name" placeholder="Misal: Maulana Aziz" maxlength="100">
+                
+                <label for="wsp-private-key">Private Key (Soul Key):</label>
+                <textarea id="wsp-private-key" rows="3" placeholder="Tulis sendiri atau buat otomatis..."></textarea>
+                
+                <div class="modal-buttons">
+                    <button class="btn btn-magic" onclick="generateMoePrivateKey()">✨ Buat Private Key Moe ✨</button>
+                    <button class="btn btn-success" onclick="saveSignatureSettings()">✅ Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
 // History management
 let textHistory = [''];
