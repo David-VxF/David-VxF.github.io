@@ -877,6 +877,67 @@ window.addEventListener("DOMContentLoaded", () => {
     </div>
 
 <script>
+function showEncryptionModal() {
+            document.getElementById('encryptionModal').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('#encryptionModal .modal').classList.add('show');
+            }, 10);
+        }
+        
+        function closeEncryptionModal() {
+            document.querySelector('#encryptionModal .modal').classList.remove('show');
+            setTimeout(() => {
+                document.getElementById('encryptionModal').style.display = 'none';
+            }, 300);
+        }
+        
+        function showWSPModal() {
+            document.getElementById('wspModal').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('#wspModal .modal').classList.add('show');
+            }, 10);
+        }
+        
+        function closeWSPModal() {
+            document.querySelector('#wspModal .modal').classList.remove('show');
+            setTimeout(() => {
+                document.getElementById('wspModal').style.display = 'none';
+            }, 300);
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                if (e.target.id === 'encryptionModal') {
+                    closeEncryptionModal();
+                } else if (e.target.id === 'wspModal') {
+                    closeWSPModal();
+                }
+            }
+        });
+        
+        // Add ripple effect to buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) {
+                const button = e.target;
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.classList.add('ripple');
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                
+                button.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
+        });
 // History management
 let textHistory = [''];
 let historyIndex = 0;
