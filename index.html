@@ -199,9 +199,6 @@
             100% { left: 100%; }
         }
  </style>
-    <div id="loading">
-    <h1 style="color:white;text-align:center;padding-top:30vh;">🔒 Memverifikasi perangkat...</h1>
-    </div>
 <div id="form-section">
     <h2>🔐 Halaman Terkunci</h2>
     <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
@@ -269,14 +266,17 @@
 
   // Fingerprint verifikasi dulu
   FingerprintJS.load().then(fp => {
-    fp.get().then(result => {
-      console.log("VisitorID:", result.visitorId);
-      if (!verifiedDevices.includes(result.visitorId)) {
-        document.body.innerHTML = "<h1>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
-      }
-      // ✅ Jika lolos, tidak perlu ubah tampilan karena form sudah ada
-    });
+  fp.get().then(result => {
+    console.log("VisitorID:", result.visitorId);
+    if (!verifiedDevices.includes(result.visitorId)) {
+      document.body.innerHTML = "<h1 style='color:red;text-align:center;padding-top:30vh;'>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
+    } else {
+      // ✔️ Lolos fingerprint → tampilkan form
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("form-section").style.display = "block";
+    }
   });
+});
 </script>
  <template id="konten-terkunci">
     <style>
