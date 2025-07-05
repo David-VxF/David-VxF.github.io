@@ -344,6 +344,7 @@ window.addEventListener("DOMContentLoaded", () => {
             overflow-x: hidden;
         }
 
+        /* Background Image Placeholder */
         body::before {
             content: '';
             position: fixed;
@@ -351,19 +352,7 @@ window.addEventListener("DOMContentLoaded", () => {
             left: 0;
             width: 100%;
             height: 100%;
-            background: url('background.jpg') center/cover;
-            filter: blur(10px);
-            z-index: -2;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3);
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23ff6b6b" width="1200" height="800" opacity="0.1"/><text x="600" y="400" font-family="Arial" font-size="48" fill="%23666" text-anchor="middle" opacity="0.3">Background Image Placeholder</text></svg>') center/cover;
             z-index: -1;
         }
 
@@ -377,55 +366,55 @@ window.addEventListener("DOMContentLoaded", () => {
         .header {
             text-align: center;
             margin-bottom: 30px;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(45, 45, 45, 0.3);
             padding: 20px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .header h1 {
             font-size: 2.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #a8e6cf);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
             margin-bottom: 10px;
-            animation: gradient-shift 3s ease-in-out infinite;
-        }
-
-        @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
         }
 
         .toolbar {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             justify-content: center;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
+            backdrop-filter: blur(15px);
+            background: rgba(45, 45, 45, 0.25);
+            padding: 15px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 12px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 12px 18px;
             border: none;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(51, 51, 51, 0.8);
             color: #fff;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -437,230 +426,201 @@ window.addEventListener("DOMContentLoaded", () => {
             left: 50%;
             width: 0;
             height: 0;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-            transition: all 0.5s ease;
-            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
+            transition: all 0.6s ease;
+            transform: translate(-50%, -50%);
         }
 
-        .btn:hover::before {
+        .btn:active::before {
             width: 300px;
             height: 300px;
         }
 
         .btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .btn:active {
-            transform: translateY(-1px) scale(0.98);
-            animation: pulse 0.3s ease-out;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.98); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(0.98); }
+            background: rgba(85, 85, 85, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #007bff, #0056b3);
+            background: rgba(0, 123, 255, 0.8);
             border: 1px solid rgba(0, 123, 255, 0.3);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(45deg, #0056b3, #004085);
-            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4);
+            background: rgba(0, 86, 179, 0.9);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
         }
 
         .btn-success {
-            background: linear-gradient(45deg, #28a745, #1e7e34);
+            background: rgba(40, 167, 69, 0.8);
             border: 1px solid rgba(40, 167, 69, 0.3);
         }
 
         .btn-success:hover {
-            background: linear-gradient(45deg, #1e7e34, #155724);
-            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
+            background: rgba(30, 126, 52, 0.9);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
         }
 
         .btn-magic {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #a8e6cf);
+            background: linear-gradient(45deg, rgba(255, 107, 107, 0.8), rgba(78, 205, 196, 0.8));
             color: white;
             font-weight: bold;
-            border: 1px solid rgba(255, 107, 107, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-magic:hover {
-            background: linear-gradient(45deg, #e55555, #3fb8b0, #95d5b2);
-            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+            background: linear-gradient(45deg, rgba(229, 85, 85, 0.9), rgba(63, 184, 176, 0.9));
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-encryption {
+            background: linear-gradient(45deg, rgba(138, 43, 226, 0.8), rgba(75, 0, 130, 0.8));
+            color: white;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-encryption:hover {
+            background: linear-gradient(45deg, rgba(118, 23, 206, 0.9), rgba(55, 0, 110, 0.9));
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-wsp {
+            background: linear-gradient(45deg, rgba(255, 20, 147, 0.8), rgba(255, 105, 180, 0.8));
+            color: white;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-wsp:hover {
+            background: linear-gradient(45deg, rgba(235, 0, 127, 0.9), rgba(235, 85, 160, 0.9));
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
 
         .btn:disabled {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(34, 34, 34, 0.5);
             color: #666;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
 
-        .control-panel {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .btn:disabled:hover {
+            background: rgba(34, 34, 34, 0.5);
+            transform: none;
+            box-shadow: none;
         }
 
-        .control-card {
+        .glass-panel {
             backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(45, 45, 45, 0.25);
             border-radius: 20px;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
-        .control-card::before {
-            content: '';
-            position: absolute;
+        .modal-overlay {
+            position: fixed;
             top: 0;
-            left: -100%;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
         }
 
-        .control-card:hover::before {
-            left: 100%;
+        .modal {
+            background: rgba(45, 45, 45, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
         }
 
-        .control-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        .modal.show {
+            transform: scale(1);
         }
 
-        .control-card h3 {
-            margin-bottom: 15px;
-            color: #4ecdc4;
-            font-size: 1.2rem;
+        .modal h3 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
             text-align: center;
         }
 
-        .icon-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #fff;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(26, 26, 26, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
+        }
+
+        .form-actions {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .icon-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-            transition: all 0.5s ease;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-        }
-
-        .icon-btn:hover::before {
-            width: 200px;
-            height: 200px;
-        }
-
-        .icon-btn:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .icon-btn:active {
-            transform: translateY(-2px) scale(1.05);
-            animation: bounce 0.4s ease-out;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 60%, 100% { transform: translateY(-2px) scale(1.05); }
-            40% { transform: translateY(-10px) scale(1.1); }
-            80% { transform: translateY(-5px) scale(1.08); }
-        }
-
-        .encryption-btn {
-            background: linear-gradient(45deg, #ff6b6b, #ff4757);
-            border-color: rgba(255, 107, 107, 0.3);
-        }
-
-        .encryption-btn:hover {
-            background: linear-gradient(45deg, #ff4757, #ff3742);
-            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.5);
-        }
-
-        .signature-btn {
-            background: linear-gradient(45deg, #4ecdc4, #45b7aa);
-            border-color: rgba(78, 205, 196, 0.3);
-        }
-
-        .signature-btn:hover {
-            background: linear-gradient(45deg, #45b7aa, #3fb8b0);
-            box-shadow: 0 15px 30px rgba(78, 205, 196, 0.5);
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .btn-label {
-            font-size: 12px;
-            margin-top: 8px;
-            text-align: center;
-            color: #ccc;
-            font-weight: 500;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
         }
 
         .editor-container {
             backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(45, 45, 45, 0.25);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .editor-textarea {
             width: 100%;
             height: 400px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(26, 26, 26, 0.8);
             border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px;
             color: #fff;
             font-family: 'Courier New', monospace;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             resize: vertical;
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
@@ -668,21 +628,20 @@ window.addEventListener("DOMContentLoaded", () => {
 
         .editor-textarea:focus {
             outline: none;
-            border-color: rgba(78, 205, 196, 0.5);
-            box-shadow: 0 0 20px rgba(78, 205, 196, 0.3);
+            border-color: #007bff;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.3);
         }
 
         .status-bar {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
+            backdrop-filter: blur(15px);
+            background: rgba(51, 51, 51, 0.8);
+            padding: 15px 20px;
             border-radius: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .file-input {
@@ -690,130 +649,117 @@ window.addEventListener("DOMContentLoaded", () => {
         }
 
         .alert {
-            padding: 12px 16px;
+            padding: 15px 20px;
             border-radius: 15px;
             margin-bottom: 15px;
             font-weight: 500;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .alert-success {
-            background: rgba(212, 237, 218, 0.2);
-            color: #d4edda;
+            background: rgba(212, 237, 218, 0.9);
+            color: #155724;
         }
 
         .alert-error {
-            background: rgba(248, 215, 218, 0.2);
-            color: #f8d7da;
+            background: rgba(248, 215, 218, 0.9);
+            color: #721c24;
         }
 
         .alert-info {
-            background: rgba(209, 236, 241, 0.2);
-            color: #d1ecf1;
+            background: rgba(209, 236, 241, 0.9);
+            color: #0c5460;
         }
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(20px);
-        }
-
-        .modal-content {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(30px);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal h3 {
-            color: #4ecdc4;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .modal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .modal-form label {
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .modal-form input, .modal-form textarea {
+        .encryption-note {
+            background: rgba(42, 42, 42, 0.8);
+            backdrop-filter: blur(5px);
             padding: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            color: #fff;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-        }
-
-        .modal-form input:focus, .modal-form textarea:focus {
-            outline: none;
-            border-color: rgba(78, 205, 196, 0.5);
-            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .close {
+            margin-top: 10px;
+            font-size: 12px;
             color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .close:hover {
-            color: #fff;
+        .icon-placeholder {
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            display: inline-block;
+            margin-right: 8px;
+            position: relative;
         }
 
+        .icon-placeholder::after {
+            content: '🖼️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+        }
+
+        /* Ripple Effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Pulse Animation for Special Buttons */
+        .btn-magic,
+        .btn-encryption,
+        .btn-wsp {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(255, 107, 107, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        /* Mobile Responsive */
         @media (max-width: 768px) {
             .toolbar {
                 flex-direction: column;
-                gap: 10px;
+                gap: 15px;
             }
 
-            .control-panel {
-                flex-direction: column;
-            }
-
-            .btn-row {
+            .toolbar-group {
                 flex-wrap: wrap;
+                justify-content: center;
             }
 
             .status-bar {
                 flex-direction: column;
                 gap: 10px;
+                text-align: center;
+            }
+
+            .modal {
+                max-width: 95%;
+                padding: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
             }
 
             .header h1 {
@@ -832,32 +778,46 @@ window.addEventListener("DOMContentLoaded", () => {
         <div id="alertContainer"></div>
 
         <div class="toolbar">
-            <button class="btn btn-primary" onclick="newFile()">📄 New</button>
-            <label for="fileInput" class="btn">📁 Open</label>
-            <input type="file" id="fileInput" class="file-input" accept=".wfc" onchange="loadFile(event)">
-            <button class="btn btn-success" onclick="saveFile()">💾 Save</button>
-            <button class="btn" id="undoBtn" onclick="undo()" disabled>↶ Undo</button>
-            <button class="btn" id="redoBtn" onclick="redo()" disabled>↷ Redo</button>
-        </div>
+            <!-- File Operations Group -->
+            <div class="toolbar-group">
+                <button class="btn btn-primary" onclick="newFile()">
+                    <span class="icon-placeholder"></span>New
+                </button>
+                <label for="fileInput" class="btn">
+                    <span class="icon-placeholder"></span>Open
+                </label>
+                <input type="file" id="fileInput" class="file-input" accept=".wfc" onchange="loadFile(event)">
+                <button class="btn btn-success" onclick="saveFile()">
+                    <span class="icon-placeholder"></span>Save
+                </button>
+            </div>
 
-        <div class="control-panel">
-            <div class="control-card">
-                <h3>🔐 Keamanan</h3>
-                <div class="btn-row">
-                    <div>
-                        <button class="icon-btn encryption-btn" onclick="openEncryptionModal()">🔒</button>
-                        <div class="btn-label">Enkripsi</div>
-                    </div>
-                    <div>
-                        <button class="icon-btn signature-btn" onclick="openSignatureModal()">✨</button>
-                        <div class="btn-label">Signature</div>
-                    </div>
-                </div>
+            <!-- Edit Operations Group -->
+            <div class="toolbar-group">
+                <button class="btn" id="undoBtn" onclick="undo()" disabled>
+                    <span class="icon-placeholder"></span>Undo
+                </button>
+                <button class="btn" id="redoBtn" onclick="redo()" disabled>
+                    <span class="icon-placeholder"></span>Redo
+                </button>
+            </div>
+
+            <!-- Security & Signature Group -->
+            <div class="toolbar-group">
+                <button class="btn btn-encryption" onclick="showEncryptionModal()">
+                    <span class="icon-placeholder"></span>Encryption
+                </button>
+                <button class="btn btn-wsp" onclick="showWSPModal()">
+                    <span class="icon-placeholder"></span>WSP Signature
+                </button>
+                <button class="btn btn-magic" onclick="generateRandomKey()">
+                    <span class="icon-placeholder"></span>Magic Key
+                </button>
             </div>
         </div>
 
-        <div class="editor-container">
-            <h3 style="margin-bottom: 15px;">📝 Text Editor</h3>
+        <div class="editor-container glass-panel">
+            <h3 style="margin-bottom: 15px; color: #4ecdc4;">📝 Text Editor</h3>
             <textarea id="textEditor" class="editor-textarea" placeholder="Ketik teks Anda di sini..." oninput="handleTextChange()"></textarea>
         </div>
 
@@ -874,48 +834,46 @@ window.addEventListener("DOMContentLoaded", () => {
     </div>
 
     <!-- Encryption Modal -->
-    <div id="encryptionModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeEncryptionModal()">&times;</span>
+    <div id="encryptionModal" class="modal-overlay">
+        <div class="modal">
             <h3>🔐 Pengaturan Enkripsi</h3>
-            <div class="modal-form">
-                <label for="encryptionKey">Encryption Key:</label>
+            <div class="form-group">
+                <label>Encryption Key:</label>
                 <textarea id="encryptionKey" placeholder="Masukkan key enkripsi (kosongkan untuk tidak mengenkripsi)..." rows="3"></textarea>
-                <div class="modal-buttons">
-                    <button class="btn btn-magic" onclick="generateRandomKey()">🎲 Generate Random Key</button>
-                    <button class="btn" onclick="clearKey()">🗑️ Clear Key</button>
-                    <button class="btn btn-success" onclick="saveEncryptionSettings()">✅ Simpan</button>
-                </div>
-                <div style="font-size: 12px; color: #aaa; margin-top: 10px; text-align: center;">
+                <div class="encryption-note">
                     💡 Tip: Jika key kosong, file tidak akan dienkripsi. Key yang sama diperlukan untuk membuka file.
                 </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn" onclick="clearKey()">🗑️ Clear Key</button>
+                <button class="btn btn-magic" onclick="generateRandomKey()">🎲 Generate Random</button>
+                <button class="btn btn-success" onclick="closeEncryptionModal()">✅ OK</button>
             </div>
         </div>
     </div>
 
-    <!-- Signature Modal -->
-    <div id="signatureModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSignatureModal()">&times;</span>
+    <!-- WSP Modal -->
+    <div id="wspModal" class="modal-overlay">
+        <div class="modal">
             <h3>✨ Waifu Signature Protocol ✨</h3>
-            <div class="modal-form">
-                <label for="waifu-name">Nama Waifu:</label>
+            <div class="form-group">
+                <label>Nama Waifu:</label>
                 <input type="text" id="waifu-name" placeholder="Misal: Shirasu Azusa(waifu admin)" maxlength="100">
-                
-                <label for="author-name">Nama Author:</label>
+            </div>
+            <div class="form-group">
+                <label>Nama Author:</label>
                 <input type="text" id="author-name" placeholder="Misal: Maulana Aziz" maxlength="100">
-                
-                <label for="wsp-private-key">Private Key (Soul Key):</label>
+            </div>
+            <div class="form-group">
+                <label>Private Key (Soul Key):</label>
                 <textarea id="wsp-private-key" rows="3" placeholder="Tulis sendiri atau buat otomatis..."></textarea>
-                
-                <div class="modal-buttons">
-                    <button class="btn btn-magic" onclick="generateMoePrivateKey()">✨ Buat Private Key Moe ✨</button>
-                    <button class="btn btn-success" onclick="saveSignatureSettings()">✅ Simpan</button>
-                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-magic" onclick="generateMoePrivateKey()">✨ Generate Moe Key</button>
+                <button class="btn btn-success" onclick="closeWSPModal()">✅ OK</button>
             </div>
         </div>
     </div>
-    <script>
 // History management
 let textHistory = [''];
 let historyIndex = 0;
