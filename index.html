@@ -202,7 +202,7 @@
  <div id="form-section">
     <h2>🔐 Halaman Terkunci</h2>
     <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
-    <input type="text" id="chatId" placeholder="ID Telegram">
+    <input type="text" id="chat-id" placeholder="ID Telegram">
     <button onclick="kirimTokenKeTelegram()">Kirim Token</button>
     <br><br>
     <input type="text" id="token-input" placeholder="Masukkan Token">
@@ -230,7 +230,7 @@ FingerprintJS.load().then(fp => {
     const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
     const base = `waifutoken-${jamOffset}-${SECRET}`;
     const data = new TextEncoder().encode(base);
-    const hash = await crypto.subtle.digest("SHA-256", data);
+    const hash = await crypto.subtle.digest("SHA-512", data);
     const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
     return hex.slice(0, 10);
   }
@@ -241,7 +241,7 @@ FingerprintJS.load().then(fp => {
 
     const token = await generateTokenSaatIni();
     const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-    const pesan = `🕐 Token Akses Jam ${waktu}:\n🔐 ${token}`;
+    const pesan = `🕐 Token Akses Jam ${waktu}:\n🔐 ```${token}``` `;
 
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
