@@ -75,36 +75,20 @@
             background: #1e7e34;
         }
 
+        .btn-magic {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-magic:hover {
+            background: linear-gradient(45deg, #e55555, #3fb8b0);
+        }
+
         .btn:disabled {
             background: #222;
             color: #666;
             cursor: not-allowed;
-        }
-
-        .editor-container {
-            background: #2d2d2d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .editor-textarea {
-            width: 100%;
-            height: 400px;
-            background: #1a1a1a;
-            border: 2px solid #444;
-            border-radius: 8px;
-            padding: 15px;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.5;
-            resize: vertical;
-        }
-
-        .editor-textarea:focus {
-            outline: none;
-            border-color: #007bff;
         }
 
         .metadata-panel {
@@ -130,7 +114,7 @@
             font-weight: 600;
         }
 
-        .metadata-row input, .metadata-row select {
+        .metadata-row input, .metadata-row select, .metadata-row textarea {
             flex: 1;
             padding: 8px 12px;
             background: #1a1a1a;
@@ -140,7 +124,63 @@
             font-size: 14px;
         }
 
-        .metadata-row input:focus, .metadata-row select:focus {
+        .metadata-row input:focus, .metadata-row select:focus, .metadata-row textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .wsp-form {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #ff6b6b;
+        }
+
+        .wsp-form h3 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .key-input-container {
+            position: relative;
+        }
+
+        .key-input-container textarea {
+            width: 100%;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .key-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .editor-container {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            height: 400px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .editor-textarea:focus {
             outline: none;
             border-color: #007bff;
         }
@@ -184,6 +224,15 @@
             border: 1px solid #bee5eb;
         }
 
+        .encryption-note {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
         @media (max-width: 768px) {
             .toolbar {
                 flex-direction: column;
@@ -203,6 +252,10 @@
                 flex-direction: column;
                 gap: 10px;
             }
+
+            .key-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -210,7 +263,7 @@
     <div class="container">
         <div class="header">
             <h1>WaifuCode Editor</h1>
-            <p>Editor teks dengan encoding WaifuCode dan digital signature</p>
+            <p>Editor teks dengan WSP dan enkripsi fleksibel</p>
         </div>
 
         <div id="alertContainer"></div>
@@ -225,31 +278,40 @@
         </div>
 
         <div class="metadata-panel">
-            <h3 style="margin-bottom: 15px;">📋 Metadata</h3>
+            <h3 style="margin-bottom: 15px;">🔐 Enkripsi & Keamanan</h3>
             <div class="metadata-row">
-                <label>Author:</label>
-                <input type="text" id="authorInput" placeholder="Nama penulis..." maxlength="100">
+                <label>Encryption Key:</label>
+                <div class="key-input-container">
+                    <textarea id="encryptionKey" placeholder="Masukkan key enkripsi (kosongkan untuk tidak mengenkripsi)..." rows="3"></textarea>
+                    <div class="key-buttons">
+                        <button class="btn btn-magic" onclick="generateRandomKey()">🎲 Generate Random Key</button>
+                        <button class="btn" onclick="clearKey()">🗑️ Clear Key</button>
+                    </div>
+                    <div class="encryption-note">
+                        💡 Tip: Jika key kosong, file tidak akan dienkripsi. Key yang sama diperlukan untuk membuka file.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wsp-form">
+            <h3>✨ Waifu Signature Protocol ✨</h3>
+            <div class="metadata-row">
+                <label>Nama Waifu:</label>
+                <input type="text" id="waifu-name" placeholder="Misal: Shirasu Azusa(waifu admin)" maxlength="100">
             </div>
             <div class="metadata-row">
-                <label>Note:</label>
-                <input type="text" id="noteInput" placeholder="Catatan tambahan..." maxlength="200">
+                <label>Nama Author:</label>
+                <input type="text" id="author-name" placeholder="Misal: Maulana Aziz" maxlength="100">
             </div>
             <div class="metadata-row">
-                <label>Signature:</label>
-                <select id="signatureType">
-                    <option value="CRC32">CRC32 (Default)</option>
-                    <option value="SHA256">SHA256 + Salt</option>
-                    <option value="SHA512">SHA512 Hash</option>
-                    <option value="MD5">MD5 Hash</option>
-                    <option value="SHA1">SHA1 Hash</option>
-                    <option value="BLAKE2B">BLAKE2B-256</option>
-                    <option value="XXHASH">XXHash64</option>
-                    <option value="FNV1A">FNV-1a Hash</option>
-                    <option value="MURMUR3">MurmurHash3</option>
-                    <option value="ADLER32">Adler-32</option>
-                    <option value="HMAC_SHA256">HMAC-SHA256</option>
-                    <option value="POLY1305">Poly1305-AES</option>
-                </select>
+                <label>Private Key (Soul Key):</label>
+                <div class="key-input-container">
+                    <textarea id="wsp-private-key" rows="3" placeholder="Tulis sendiri atau buat otomatis..."></textarea>
+                    <div class="key-buttons">
+                        <button class="btn btn-magic" onclick="generateMoePrivateKey()">✨ Buat Private Key Moe ✨</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -265,57 +327,29 @@
                 <span id="fileName">File: Untitled.wfc</span>
             </div>
             <div>
-                <span>WFC2 Format</span>
+                <span>WFC2 Format + WSP</span>
             </div>
         </div>
     </div>
 
     <script>
-// WaifuCode Implementation V2 with Enhanced Security
-const basis17_digits = ["Azusa", "Haruka", "Shirasu", "Yuka", "Kanade", "Iroha", "Chiaki", "Hifumi", "Mizuki",
-                       "Rinka", "Noa", "Toki", "Kiritani", "Nagisa", "Wakamo", "Olivia", "Erika"];
-
-// Fixed 512-byte encryption key
-const ENCRYPTION_KEY = new Uint8Array([
-    0x4A, 0x6F, 0x68, 0x6E, 0x20, 0x44, 0x6F, 0x65, 0x20, 0x53, 0x65, 0x63, 0x72, 0x65, 0x74, 0x20,
-    0x4B, 0x65, 0x79, 0x20, 0x66, 0x6F, 0x72, 0x20, 0x57, 0x61, 0x69, 0x66, 0x75, 0x43, 0x6F, 0x64,
-    0x65, 0x20, 0x45, 0x6E, 0x63, 0x72, 0x79, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x20, 0x41, 0x45, 0x53,
-    0x32, 0x35, 0x36, 0x20, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6F, 0x67, 0x72, 0x61, 0x70, 0x68, 0x79,
-    0x20, 0x46, 0x6F, 0x72, 0x20, 0x53, 0x65, 0x63, 0x75, 0x72, 0x65, 0x20, 0x44, 0x61, 0x74, 0x61,
-    0x20, 0x50, 0x72, 0x6F, 0x74, 0x65, 0x63, 0x74, 0x69, 0x6F, 0x6E, 0x20, 0x61, 0x6E, 0x64, 0x20,
-    0x49, 0x6E, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x20, 0x43, 0x68, 0x65, 0x63, 0x6B, 0x73,
-    0x20, 0x69, 0x6E, 0x20, 0x4D, 0x6F, 0x64, 0x65, 0x72, 0x6E, 0x20, 0x44, 0x69, 0x67, 0x69, 0x74,
-    0x61, 0x6C, 0x20, 0x41, 0x70, 0x70, 0x6C, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x73, 0x20,
-    0x41, 0x6E, 0x64, 0x20, 0x46, 0x69, 0x6C, 0x65, 0x20, 0x46, 0x6F, 0x72, 0x6D, 0x61, 0x74, 0x73,
-    0x20, 0x55, 0x73, 0x69, 0x6E, 0x67, 0x20, 0x41, 0x64, 0x76, 0x61, 0x6E, 0x63, 0x65, 0x64, 0x20,
-    0x48, 0x61, 0x73, 0x68, 0x69, 0x6E, 0x67, 0x20, 0x41, 0x6C, 0x67, 0x6F, 0x72, 0x69, 0x74, 0x68,
-    0x6D, 0x73, 0x20, 0x61, 0x6E, 0x64, 0x20, 0x43, 0x72, 0x79, 0x70, 0x74, 0x6F, 0x67, 0x72, 0x61,
-    0x70, 0x68, 0x69, 0x63, 0x20, 0x50, 0x72, 0x69, 0x6D, 0x69, 0x74, 0x69, 0x76, 0x65, 0x73, 0x20,
-    0x54, 0x68, 0x61, 0x74, 0x20, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x64, 0x65, 0x20, 0x53, 0x74, 0x72,
-    0x6F, 0x6E, 0x67, 0x20, 0x53, 0x65, 0x63, 0x75, 0x72, 0x69, 0x74, 0x79, 0x20, 0x47, 0x75, 0x61,
-    0x72, 0x61, 0x6E, 0x74, 0x65, 0x65, 0x73, 0x20, 0x46, 0x6F, 0x72, 0x20, 0x44, 0x61, 0x74, 0x61,
-    0x20, 0x49, 0x6E, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x20, 0x41, 0x6E, 0x64, 0x20, 0x41,
-    0x75, 0x74, 0x68, 0x65, 0x6E, 0x74, 0x69, 0x63, 0x69, 0x74, 0x79, 0x20, 0x56, 0x65, 0x72, 0x69,
-    0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x20, 0x49, 0x6E, 0x20, 0x41, 0x6C, 0x6C, 0x20,
-    0x43, 0x6F, 0x6E, 0x74, 0x65, 0x78, 0x74, 0x73, 0x20, 0x4F, 0x66, 0x20, 0x55, 0x73, 0x61, 0x67,
-    0x65, 0x20, 0x41, 0x6E, 0x64, 0x20, 0x49, 0x6D, 0x70, 0x6C, 0x65, 0x6D, 0x65, 0x6E, 0x74, 0x61,
-    0x74, 0x69, 0x6F, 0x6E, 0x20, 0x57, 0x69, 0x74, 0x68, 0x20, 0x4D, 0x61, 0x78, 0x69, 0x6D, 0x75,
-    0x6D, 0x20, 0x50, 0x65, 0x72, 0x66, 0x6F, 0x72, 0x6D, 0x61, 0x6E, 0x63, 0x65, 0x20, 0x41, 0x6E,
-    0x64, 0x20, 0x52, 0x65, 0x6C, 0x69, 0x61, 0x62, 0x69, 0x6C, 0x69, 0x74, 0x79, 0x20, 0x43, 0x68,
-    0x61, 0x72, 0x61, 0x63, 0x74, 0x65, 0x72, 0x69, 0x73, 0x74, 0x69, 0x63, 0x73, 0x20, 0x46, 0x6F,
-    0x72, 0x20, 0x41, 0x6C, 0x6C, 0x20, 0x55, 0x73, 0x65, 0x72, 0x73, 0x20, 0x41, 0x6E, 0x64, 0x20,
-    0x41, 0x70, 0x70, 0x6C, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x73, 0x20, 0x49, 0x6E, 0x20,
-    0x54, 0x68, 0x65, 0x20, 0x4D, 0x6F, 0x64, 0x65, 0x72, 0x6E, 0x20, 0x44, 0x69, 0x67, 0x69, 0x74,
-    0x61, 0x6C, 0x20, 0x45, 0x63, 0x6F, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6D, 0x20, 0x45, 0x6E, 0x76,
-    0x69, 0x72, 0x6F, 0x6E, 0x6D, 0x65, 0x6E, 0x74, 0x20, 0x41, 0x6E, 0x64, 0x20, 0x42, 0x65, 0x79,
-    0x6F, 0x6E, 0x64, 0x20, 0x46, 0x6F, 0x72, 0x20, 0x46, 0x75, 0x74, 0x75, 0x72, 0x65, 0x20, 0x55
-]);
-
 // History management
 let textHistory = [''];
 let historyIndex = 0;
 let isUpdatingFromHistory = false;
 let currentFileName = "Untitled.wfc";
+let currentSectorID = "00001";
+
+// Get user location for sector determination
+navigator.geolocation?.getCurrentPosition(pos => {
+    const lat = Math.abs(pos.coords.latitude);
+    const lon = Math.abs(pos.coords.longitude);
+    const sectorRaw = Math.floor(((lat * 100) + (lon * 100)) % 10000) + 1;
+    currentSectorID = sectorRaw.toString().padStart(5, "0");
+}, err => {
+    console.warn("Gagal mendapatkan lokasi, default sector digunakan.");
+    currentSectorID = "00001";
+});
 
 function showAlert(message, type = 'info') {
     const alertContainer = document.getElementById('alertContainer');
@@ -393,186 +427,109 @@ function updateStats() {
     }
 }
 
-// Enhanced Crypto Functions
-async function sha256(data) {
+// Key generation functions
+function generateRandomKey() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+    let key = '';
+    for (let i = 0; i < 64; i++) {
+        key += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('encryptionKey').value = key;
+}
+
+function clearKey() {
+    document.getElementById('encryptionKey').value = '';
+}
+
+function generateMoePrivateKey() {
+    const namaWaifu = document.getElementById("waifu-name").value.trim() || "Waifu";
+    const sector = currentSectorID || "00001";
+    const min = 10 ** 7;
+    const max = 10 ** 14 - 1;
+    const angka = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const hasil = `${namaWaifu} mencintai admin sejak ${angka} tahun lalu pada pandangan pertama di sector ${sector}`;
+    document.getElementById("wsp-private-key").value = hasil;
+}
+
+// WSP Digital Signature Functions
+async function generateDigitalSignature(content, privateKey) {
     const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+    const data = encoder.encode(content + privateKey);
+    const hash = await crypto.subtle.digest("SHA-512", data);
 
-async function sha512(data) {
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-512', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+    const bytes = new Uint8Array(hash);
+    const hex = [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+    let number = BigInt('0x' + hex);
 
-async function sha1Hash(data) {
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-1', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function crc32(data) {
-    const table = [];
-    for (let i = 0; i < 256; i++) {
-        let c = i;
-        for (let j = 0; j < 8; j++) {
-            c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-        }
-        table[i] = c;
+    const digits = ["A","H","S","Y","K","I","C","H","M","R","N","T","K","N","W","O","E"];
+    let encoded = '';
+    while (number > 0n) {
+        const rem = number % 17n;
+        encoded = digits[Number(rem)] + encoded;
+        number = number / 17n;
     }
-    
-    let crc = 0 ^ (-1);
-    for (let i = 0; i < data.length; i++) {
-        crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xFF];
-    }
-    return (crc ^ (-1)) >>> 0;
+
+    return "IL" + encoded;
 }
 
-function adler32(data) {
-    let a = 1, b = 0;
-    for (let i = 0; i < data.length; i++) {
-        a = (a + data[i]) % 65521;
-        b = (b + a) % 65521;
-    }
-    return (b << 16) | a;
-}
-
-function fnv1a(data) {
-    let hash = 2166136261;
-    for (let i = 0; i < data.length; i++) {
-        hash ^= data[i];
-        hash = (hash * 16777619) >>> 0;
-    }
-    return hash;
-}
-
-function xxhash64(data, seed = 0) {
-    // Simplified XXHash64 implementation
-    let h64 = seed + data.length;
-    for (let i = 0; i < data.length; i++) {
-        h64 = (h64 ^ data[i]) * 0x100000001b3;
-        h64 = ((h64 << 13) | (h64 >>> 19)) >>> 0;
-    }
-    return h64;
-}
-
-function murmur3(data, seed = 0) {
-    let h1 = seed;
-    const c1 = 0xcc9e2d51;
-    const c2 = 0x1b873593;
-    
-    for (let i = 0; i < data.length; i += 4) {
-        let k1 = data[i] | (data[i+1] << 8) | (data[i+2] << 16) | (data[i+3] << 24);
-        k1 = (k1 * c1) >>> 0;
-        k1 = ((k1 << 15) | (k1 >>> 17)) >>> 0;
-        k1 = (k1 * c2) >>> 0;
-        
-        h1 ^= k1;
-        h1 = ((h1 << 13) | (h1 >>> 19)) >>> 0;
-        h1 = (h1 * 5 + 0xe6546b64) >>> 0;
-    }
-    
-    h1 ^= data.length;
-    h1 ^= h1 >>> 16;
-    h1 = (h1 * 0x85ebca6b) >>> 0;
-    h1 ^= h1 >>> 13;
-    h1 = (h1 * 0xc2b2ae35) >>> 0;
-    h1 ^= h1 >>> 16;
-    
-    return h1;
-}
-
-async function blake2b(data) {
-    // Simplified BLAKE2B implementation
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-        hash = (hash * 31 + data[i]) >>> 0;
-    }
-    return hash.toString(16);
-}
-
-async function hmacSha256(data, key) {
-    const keyBuffer = new TextEncoder().encode(key);
-    const dataBuffer = new TextEncoder().encode(data);
-    const cryptoKey = await crypto.subtle.importKey(
-        'raw', keyBuffer, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-    );
-    const signature = await crypto.subtle.sign('HMAC', cryptoKey, dataBuffer);
-    return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function poly1305(data) {
-    // Simplified Poly1305 implementation
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-        hash = (hash + data[i] * (i + 1)) >>> 0;
-    }
-    return hash.toString(16);
-}
-
-async function md5Hash(data) {
-    // Simple MD5-like hash
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-        hash = ((hash << 5) - hash + data[i]) >>> 0;
-    }
-    return hash.toString(16);
-}
-
-async function generateSignature(data, type) {
-    const dataStr = Array.from(data).map(b => String.fromCharCode(b)).join('');
-    
-    switch (type) {
-        case 'SHA256':
-            return await sha256(dataStr + 'WaifuCodeSalt2024');
-        case 'SHA512':
-            return await sha512(dataStr);
-        case 'MD5':
-            return await md5Hash(dataStr);
-        case 'SHA1':
-            return await sha1Hash(dataStr);
-        case 'BLAKE2B':
-            return await blake2b(data);
-        case 'XXHASH':
-            return xxhash64(data).toString(16);
-        case 'FNV1A':
-            return fnv1a(data).toString(16);
-        case 'MURMUR3':
-            return murmur3(data).toString(16);
-        case 'ADLER32':
-            return adler32(data).toString(16);
-        case 'HMAC_SHA256':
-            return await hmacSha256(dataStr, 'WaifuCodeHMACKey');
-        case 'POLY1305':
-            return await poly1305(data);
-        case 'CRC32':
-        default:
-            return crc32(data).toString(16);
-    }
-}
-
-async function verifySignature(data, signature, type) {
-    const computedSignature = await generateSignature(data, type);
+async function verifyDigitalSignature(content, privateKey, signature) {
+    const computedSignature = await generateDigitalSignature(content, privateKey);
     return computedSignature === signature;
 }
 
-// AES-256 Encryption/Decryption
-async function encryptData(data) {
-    const key = await crypto.subtle.importKey(
-        'raw', ENCRYPTION_KEY.slice(0, 32), 
+async function buildWSPMetadata(content) {
+    const waifu = document.getElementById("waifu-name").value.trim();
+    const saksi = document.getElementById("author-name").value.trim();
+    const privateKey = document.getElementById("wsp-private-key").value.trim();
+    const sector = currentSectorID || "00001";
+
+    const tanggal = new Date();
+    const yyyy = tanggal.getFullYear();
+    const mm = String(tanggal.getMonth() + 1).padStart(2, '0');
+    const dd = String(tanggal.getDate()).padStart(2, '0');
+    const tglNikah = `${yyyy}-${mm}-${dd}`;
+
+    const inisialWaifu = waifu.split(" ").map(w => w[0].toUpperCase()).join("").slice(0, 2);
+    const kodeSurat = `WSP${yyyy}-${sector}-${inisialWaifu}`;
+    const lokasiNikah = `WaifuVerse, Sector-${sector}`;
+
+    const digitalSignature = await generateDigitalSignature(content, privateKey);
+
+    return {
+        waifu_signature: {
+            type: "WSP",
+            kode_surat: kodeSurat,
+            nama_suami: "David-VxF",
+            nama_istri: waifu,
+            tanggal_nikah: tglNikah,
+            lokasi_nikah: lokasiNikah,
+            saksi: saksi,
+            digital_signature: digitalSignature,
+            verifikasi_algoritma: "SHA512"
+        }
+    };
+}
+
+// Encryption/Decryption functions
+async function encryptData(data, key) {
+    if (!key || key.trim() === '') {
+        return data; // No encryption if key is empty
+    }
+    
+    const encoder = new TextEncoder();
+    const keyBuffer = encoder.encode(key);
+    
+    // Create a proper 32-byte key using SHA-256
+    const keyHash = await crypto.subtle.digest('SHA-256', keyBuffer);
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyHash, 
         { name: 'AES-GCM' }, false, ['encrypt']
     );
     
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const encrypted = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv: iv }, key, data
+        { name: 'AES-GCM', iv: iv }, cryptoKey, data
     );
     
     const result = new Uint8Array(12 + encrypted.byteLength);
@@ -582,9 +539,18 @@ async function encryptData(data) {
     return result;
 }
 
-async function decryptData(encryptedData) {
-    const key = await crypto.subtle.importKey(
-        'raw', ENCRYPTION_KEY.slice(0, 32),
+async function decryptData(encryptedData, key) {
+    if (!key || key.trim() === '') {
+        return encryptedData; // No decryption if key is empty
+    }
+    
+    const encoder = new TextEncoder();
+    const keyBuffer = encoder.encode(key);
+    
+    // Create a proper 32-byte key using SHA-256
+    const keyHash = await crypto.subtle.digest('SHA-256', keyBuffer);
+    const cryptoKey = await crypto.subtle.importKey(
+        'raw', keyHash,
         { name: 'AES-GCM' }, false, ['decrypt']
     );
     
@@ -592,7 +558,7 @@ async function decryptData(encryptedData) {
     const data = encryptedData.slice(12);
     
     const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: iv }, key, data
+        { name: 'AES-GCM', iv: iv }, cryptoKey, data
     );
     
     return new Uint8Array(decrypted);
@@ -619,25 +585,45 @@ function encodeWaifucodeFile(text) {
     return content;
 }
 
+function validateWSPForm() {
+    const waifu = document.getElementById("waifu-name").value.trim();
+    const saksi = document.getElementById("author-name").value.trim();
+    const key = document.getElementById("wsp-private-key").value.trim();
+
+    if (!waifu) {
+        showAlert("Nama waifu tidak boleh kosong.", 'error');
+        return false;
+    }
+    if (!saksi) {
+        showAlert("Nama author (saksi) tidak boleh kosong.", 'error');
+        return false;
+    }
+    if (!key) {
+        showAlert("Private key belum diisi.", 'error');
+        return false;
+    }
+    return true;
+}
+
 async function createWFC2File(text) {
-    const author = document.getElementById('authorInput').value || '';
-    const note = document.getElementById('noteInput').value || '';
-    const signatureType = document.getElementById('signatureType').value;
+    if (!validateWSPForm()) return null;
+    
+    const encryptionKey = document.getElementById('encryptionKey').value;
     const creationDate = new Date().toISOString();
     
     const content = encodeWaifucodeFile(text);
     
-    // Encrypt the content
-    const encryptedContent = await encryptData(content);
-    const signature = await generateSignature(encryptedContent, signatureType);
+    // Encrypt the content if key is provided
+    const encryptedContent = await encryptData(content, encryptionKey);
     
-    // Create metadata
+    // Create WSP metadata
+    const wspMetadata = await buildWSPMetadata(text);
+    
+    // Add additional metadata
     const metadata = {
-        author: author,
-        note: note,
+        ...wspMetadata,
         creationDate: creationDate,
-        signatureType: signatureType,
-        signature: signature
+        encrypted: encryptionKey && encryptionKey.trim() !== ''
     };
     
     const metadataStr = JSON.stringify(metadata);
@@ -701,14 +687,17 @@ async function decodeWFC2File(data) {
     
     const encryptedContent = data.slice(contentLengthOffset + 4, contentLengthOffset + 4 + contentLength);
     
-    // Verify signature
-    const isValid = await verifySignature(encryptedContent, metadata.signature, metadata.signatureType);
-    if (!isValid) {
-        throw new Error(`Signature verification failed (${metadata.signatureType})`);
+    // Ask for decryption key if file is encrypted
+    let decryptionKey = '';
+    if (metadata.encrypted) {
+        decryptionKey = prompt("File ini terenkripsi. Masukkan encryption key:", "");
+        if (decryptionKey === null) {
+            throw new Error("Decryption cancelled");
+        }
     }
     
     // Decrypt content
-    const content = await decryptData(encryptedContent);
+    const content = await decryptData(encryptedContent, decryptionKey);
     
     // Decode content
     let result = "";
@@ -722,15 +711,27 @@ async function decodeWFC2File(data) {
         result += String.fromCodePoint(codepoint);
     }
 
+    // Verify WSP signature
+    if (metadata.waifu_signature) {
+        const privateKey = prompt("Masukkan private key untuk verifikasi WSP:", "");
+        if (privateKey) {
+            const isValid = await verifyDigitalSignature(result, privateKey, metadata.waifu_signature.digital_signature);
+            if (!isValid) {
+                throw new Error("WSP signature verification failed");
+            }
+        }
+    }
+
     return { text: result, metadata: metadata };
 }
 
 // Editor Functions
 function newFile() {
     document.getElementById('textEditor').value = '';
-    document.getElementById('authorInput').value = '';
-    document.getElementById('noteInput').value = '';
-    document.getElementById('signatureType').value = 'CRC32';
+    document.getElementById('encryptionKey').value = '';
+    document.getElementById('waifu-name').value = '';
+    document.getElementById('author-name').value = '';
+    document.getElementById('wsp-private-key').value = '';
     currentFileName = "Untitled.wfc";
     document.getElementById('fileName').textContent = `File: ${currentFileName}`;
     
@@ -753,9 +754,12 @@ async function loadFile(event) {
             const result = await decodeWFC2File(data);
             
             document.getElementById('textEditor').value = result.text;
-            document.getElementById('authorInput').value = result.metadata.author || '';
-            document.getElementById('noteInput').value = result.metadata.note || '';
-            document.getElementById('signatureType').value = result.metadata.signatureType || 'CRC32';
+            
+            // Fill WSP form if metadata exists
+            if (result.metadata.waifu_signature) {
+                document.getElementById('waifu-name').value = result.metadata.waifu_signature.nama_istri || '';
+                document.getElementById('author-name').value = result.metadata.waifu_signature.saksi || '';
+            }
             
             currentFileName = file.name;
             document.getElementById('fileName').textContent = `File: ${currentFileName}`;
@@ -766,7 +770,7 @@ async function loadFile(event) {
             updateUndoRedoButtons();
             updateStats();
             
-            showAlert(`File "${file.name}" loaded successfully! (${result.metadata.signatureType} verified)`, 'success');
+            showAlert(`File "${file.name}" loaded successfully! (WSP verified)`, 'success');
         } catch (error) {
             showAlert("Error loading file: " + error.message, 'error');
         }
@@ -778,6 +782,8 @@ async function saveFile() {
     const text = document.getElementById('textEditor').value;
     try {
         const fileData = await createWFC2File(text);
+        if (!fileData) return; // Validation failed
+        
         const blob = new Blob([fileData], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         
@@ -789,8 +795,9 @@ async function saveFile() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        const signatureType = document.getElementById('signatureType').value;
-        showAlert(`File saved with ${signatureType} signature!`, 'success');
+        const encryptionKey = document.getElementById('encryptionKey').value;
+        const encryptionStatus = encryptionKey && encryptionKey.trim() !== '' ? 'encrypted' : 'unencrypted';
+        showAlert(`File saved with WSP signature (${encryptionStatus})!`, 'success');
     } catch (error) {
         showAlert("Error saving file: " + error.message, 'error');
     }
@@ -833,16 +840,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-  document.addEventListener('contextmenu', function(e) {
-    e.preventDefault(); // Blok klik kanan
-    alert("Klik kanan dinonaktifkan!");
-  });
     </script>
-    <noscript>
-  <style>
-    body { display: none; }
-  </style>
-  <div>JavaScript harus diaktifkan untuk melihat halaman ini.</div>
-    </noscript>
 </body>
 </html>
