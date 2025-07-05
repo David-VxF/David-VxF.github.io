@@ -232,46 +232,58 @@
 }
 
   async function kirimTokenKeTelegram() {
-    const chatId = document.getElementById("chat-id").value.trim();
-    if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
+  const chatId = document.getElementById("chat-id").value.trim();
+  if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
-    const token = await generateTokenSHA512();
-    const menit = now.getMinutes();
-    const blok = Math.floor(menit / 10) * 10;
-    const blokBerikut = (blok + 10) % 60;
-    const jam = now.getHours().toString().padStart(2, "0");
-    const label = `${jam}:${blok.toString().padStart(2, "0")} – ${jam}:${blokBerikut.toString().padStart(2, "0")}`;
-    const pesan = `🕐 Token SHA512 (berlaku ${label}):\n\`\`\`\n${token}\n\`\`\`\n\nToken ini hanya berlaku selama 10 menit dan tidak akan sama meskipun jam yang sama di hari berbeda.`;
+  const token = await generateTokenSHA512();
 
-    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: pesan,
-        parse_mode: "Markdown"
-      })
-    });
+  const now = new Date(); // ✅ TAMBAHKAN INI agar tidak error
+  const menit = now.getMinutes();
+  const blok = Math.floor(menit / 10) * 10;
+  const blokBerikut = (blok + 10) % 60;
+  const jam = now.getHours().toString().padStart(2, "0");
+  const label = `${jam}:${blok.toString().padStart(2, "0")} – ${jam}:${blokBerikut.toString().padStart(2, "0")}`;
+  
+  const pesan = `🕐 Token SHA512 (berlaku ${label}):\n\`\`\`\n${token}\n\`\`\`\n\nToken ini hanya berlaku selama 10 menit dan tidak akan sama meskipun jam yang sama di hari berbeda.`;
+
+  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: pesan,
+      parse_mode: "Markdown"
+    })
+  });
 
     if (res.ok) {
       alert("✅ Token berhasil dikirim ke Telegram Anda!");
       // ⏳ Countdown setelah token terkirim
-const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
-tombol.disabled = true;
+function mulaiCountdown(durasi) {
+  const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
+  tombol.disabled = true;
 
-let waktu = 600; // 10 menit
-const originalText = tombol.textContent;
+  let waktu = durasi;
+  const originalText = "Kirim Token";
 
-const interval = setInterval(() => {
-  waktu--;
-  tombol.textContent = `⏳ Kirim Token (${waktu}s)`;
-  if (waktu <= 0) {
-    clearInterval(interval);
-    tombol.disabled = false;
-    tombol.textContent = originalText;
-  }
-}, 1000);
-    } else {
+  const interval = setInterval(() => {
+    waktu--;
+    tombol.textContent = `⏳ Kirim Token (${waktu}s)`;
+
+    if (waktu <= 0) {
+      clearInterval(interval);
+      tombol.disabled = false;
+      tombol.textContent = originalText;
+      localStorage.removeItem("waktu_akhir_token");
+    }
+  }, 1000);
+    }
+  const akhir = Date.now() + 10 * 60 * 1000; // 10 menit dari sekarang
+  localStorage.setItem("waktu_akhir_token", akhir.toString());
+
+  mulaiCountdown(600); // mulai 10 menit
+    }
+    else {
       document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
     }
   }
@@ -302,6 +314,19 @@ const interval = setInterval(() => {
     }
   });
 });
+
+// ⏳ Jalankan countdown jika sebelumnya masih berjalan
+const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
+const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
+
+if (akhirSebelumnya) {
+  const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
+  if (sisa > 0) {
+    mulaiCountdown(sisa);
+  } else {
+    localStorage.removeItem("waktu_akhir_token");
+  }
+}
 </script>
  <template id="konten-terkunci">
     <style>
