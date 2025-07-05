@@ -840,6 +840,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    alert('Klik kanan tidak diizinkan!');
+});
     </script>
     <noscript>
   <style>
