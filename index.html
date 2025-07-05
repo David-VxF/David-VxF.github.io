@@ -840,6 +840,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // Blok klik kanan
+    alert("Klik kanan dinonaktifkan!");
+  });
   window.addEventListener("DOMContentLoaded", () => {
     const preventAll = e => e.preventDefault();
     document.addEventListener("contextmenu", preventAll);
