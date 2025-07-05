@@ -331,7 +331,20 @@
             </div>
         </div>
     </div>
+<script src="https://openfpcdn.io/fingerprintjs/v3">
+ let verifiedDevices = [
+  "r9yiTRMgIezKu30ypu1H" // ID Tuan
+];
 
+FingerprintJS.load().then(fp => {
+  fp.get().then(result => {
+    const visitorId = result.visitorId;
+    if (!verifiedDevices.includes(visitorId)) {
+      document.body.innerHTML = "<h1 style='text-align:center;color:red;'>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
+    }
+  });
+});
+</script>
     <script>
 // History management
 let textHistory = [''];
