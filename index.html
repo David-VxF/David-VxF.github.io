@@ -336,7 +336,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: #1a1a1a;
+            background-image: url('bg2.webp'); /* ← pastikan file ada dan path sesuai */
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
             color: #fff;
             min-height: 100vh;
             padding: 20px;
@@ -345,7 +348,6 @@ window.addEventListener("DOMContentLoaded", () => {
         }
 
         /* Background Image Placeholder */
-        background-image: url('bg2.webp');
         body::before {
             content: '';
             position: fixed;
