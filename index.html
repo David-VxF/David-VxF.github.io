@@ -840,14 +840,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+        
   document.addEventListener('contextmenu', function (e) {
     e.preventDefault();
   });
+        
     document.addEventListener("keydown", function(e) {
   if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J"))) {
     e.preventDefault();
   }
 });
+        
     setInterval(() => {
   const threshold = 160;
   if (window.outerWidth - window.innerWidth > threshold ||
@@ -855,9 +858,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.innerHTML = "<h1 style='text-align:center;color:red;'>Dilarang membuka DevTools</h1>";
   }
 }, 500);
+        
     document.addEventListener("keydown", function(e) {
   if (e.ctrlKey && ["u", "s"].includes(e.key.toLowerCase())) e.preventDefault();
 });
+        
     </script>
     <noscript>
   <style>
