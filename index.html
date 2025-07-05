@@ -199,17 +199,6 @@
             100% { left: 100%; }
         }
  </style>
-    <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
-<script>
-  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
-
-  FingerprintJS.load().then(fp => {
-    fp.get().then(result => {
-      console.log("VisitorID:", result.visitorId);
-      if (!verifiedDevices.includes(result.visitorId)) {
-        document.body.innerHTML = "<h1>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
-      } else {
-          
 <div id="form-section">
     <h2>🔐 Halaman Terkunci</h2>
     <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
@@ -219,8 +208,17 @@
     <input type="text" id="token-input" placeholder="Masukkan Token">
     <button onclick="cekToken()">Masuk</button>
     <p id="status" style="color:red;"></p>
-</div>  
-    <script>
+</div> 
+    <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+<script>
+  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
+
+  FingerprintJS.load().then(fp => {
+    fp.get().then(result => {
+      console.log("VisitorID:", result.visitorId);
+      if (!verifiedDevices.includes(result.visitorId)) {
+        document.body.innerHTML = "<h1>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
+      } else { 
     const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; // Ganti dengan token bot Telegram milik Tuan
     const SECRET = "ShirasuAzusaMyIstri";
     const MULAI = new Date("2025-07-01T00:00:00Z");
@@ -275,7 +273,6 @@
         document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
       }
     }
-    </script>
 </script>
  <template id="konten-terkunci">
     <style>
