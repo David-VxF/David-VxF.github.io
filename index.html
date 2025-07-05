@@ -331,6 +331,24 @@
             </div>
         </div>
     </div>
+<script>
+(function() {
+  const validTokens = ["tuan2025", "waifu123"]; // 🗝️ Ganti dengan token rahasia milik Tuan
+
+  const existing = localStorage.getItem("access_token");
+  if (existing && validTokens.includes(existing)) return;
+
+  const input = prompt("🔐 Halaman ini terkunci. Masukkan Token Akses:");
+
+  if (validTokens.includes(input)) {
+    localStorage.setItem("access_token", input);
+    alert("✅ Akses diberikan!");
+  } else {
+    document.body.innerHTML = "<h1 style='color:red;text-align:center;'>🚫 Token salah. Akses ditolak.</h1>";
+    throw new Error("Token tidak valid. Menghentikan script.");
+  }
+})();
+</script>
 <script src="https://openfpcdn.io/fingerprintjs/v3">
  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
