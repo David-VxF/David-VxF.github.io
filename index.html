@@ -199,16 +199,7 @@
             100% { left: 100%; }
         }
  </style>
-  <div id="form-section">
-    <h2>🔐 Halaman Terkunci</h2>
-    <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
-    <input type="text" id="chat-id" placeholder="ID Telegram">
-    <button onclick="kirimTokenKeTelegram()">Kirim Token</button>
-    <br><br>
-    <input type="text" id="token-input" placeholder="Masukkan Token">
-    <button onclick="cekToken()">Masuk</button>
-    <p id="status" style="color:red;"></p>
-  </div>
+
     <script src="https://openfpcdn.io/fingerprintjs/v3">
  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
@@ -219,7 +210,17 @@ FingerprintJS.load().then(fp => {
     }
   });
 });
-</script>
+    </script>
+  <div id="form-section">
+    <h2>🔐 Halaman Terkunci</h2>
+    <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
+    <input type="text" id="chat-id" placeholder="ID Telegram">
+    <button onclick="kirimTokenKeTelegram()">Kirim Token</button>
+    <br><br>
+    <input type="text" id="token-input" placeholder="Masukkan Token">
+    <button onclick="cekToken()">Masuk</button>
+    <p id="status" style="color:red;"></p>
+  </div>
   <script>
     const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; // Ganti dengan token bot Telegram milik Tuan
     const SECRET = "ShirasuAzusaMyIstri";
@@ -238,8 +239,8 @@ FingerprintJS.load().then(fp => {
 
     // 📩 Kirim token ke Telegram user
     async function kirimTokenKeTelegram() {
-      const chatId = document.getElementById("chat-id").value.trim();
-      if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
+      const chat-id = document.getElementById("chat-id").value.trim();
+      if (!chat-id) return alert("⚠️ Masukkan ID Telegram Anda.");
 
       const token = await generateTokenSHA512();
       const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
