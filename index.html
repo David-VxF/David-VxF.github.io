@@ -231,19 +231,43 @@
   return hex;
 }
 
-  async function kirimTokenKeTelegram() {
+  // ✅ Fungsi Countdown GLOBAL agar bisa dipakai ulang
+function mulaiCountdown(durasi) {
+  const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
+  tombol.disabled = true;
+
+  let waktu = durasi;
+  const originalText = "Kirim Token";
+
+  const interval = setInterval(() => {
+    waktu--;
+    const menit = Math.floor(waktu / 60);
+    const detik = waktu % 60;
+    tombol.textContent = `⏳ Kirim Token (${menit.toString().padStart(2, "0")}:${detik.toString().padStart(2, "0")})`;
+
+    if (waktu <= 0) {
+      clearInterval(interval);
+      tombol.disabled = false;
+      tombol.textContent = originalText;
+      localStorage.removeItem("waktu_akhir_token");
+    }
+  }, 1000);
+}
+
+// ✅ Kirim token & aktifkan countdown
+async function kirimTokenKeTelegram() {
   const chatId = document.getElementById("chat-id").value.trim();
   if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
   const token = await generateTokenSHA512();
 
-  const now = new Date(); // ✅ TAMBAHKAN INI agar tidak error
+  const now = new Date();
   const menit = now.getMinutes();
   const blok = Math.floor(menit / 10) * 10;
   const blokBerikut = (blok + 10) % 60;
   const jam = now.getHours().toString().padStart(2, "0");
   const label = `${jam}:${blok.toString().padStart(2, "0")} – ${jam}:${blokBerikut.toString().padStart(2, "0")}`;
-  
+
   const pesan = `🕐 Token SHA512 (berlaku ${label}):\n\`\`\`\n${token}\n\`\`\`\n\nToken ini hanya berlaku selama 10 menit dan tidak akan sama meskipun jam yang sama di hari berbeda.`;
 
   const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -256,48 +280,30 @@
     })
   });
 
-    if (res.ok) {
-      alert("✅ Token berhasil dikirim ke Telegram Anda!");
-      // ⏳ Countdown setelah token terkirim
-function mulaiCountdown(durasi) {
-  const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
-  tombol.disabled = true;
+  if (res.ok) {
+    alert("✅ Token berhasil dikirim ke Telegram Anda!");
 
-  let waktu = durasi;
-  const originalText = "Kirim Token";
+    const akhir = Date.now() + 10 * 60 * 1000; // 10 menit dari sekarang
+    localStorage.setItem("waktu_akhir_token", akhir.toString());
 
-  const interval = setInterval(() => {
-    waktu--;
-    const menit = Math.floor(waktu / 60);
-const detik = waktu % 60;
-tombol.textContent = `⏳ Kirim Token (${menit.toString().padStart(2, "0")}:${detik.toString().padStart(2, "0")})`;
-
-    if (waktu <= 0) {
-      clearInterval(interval);
-      tombol.disabled = false;
-      tombol.textContent = originalText;
-      localStorage.removeItem("waktu_akhir_token");
-    }
-  }, 1000);
-    }
-  const akhir = Date.now() + 10 * 60 * 1000; // 10 menit dari sekarang
-  localStorage.setItem("waktu_akhir_token", akhir.toString());
-
-  mulaiCountdown(600); // mulai 10 menit
-    }
-
-// ⏳ Jalankan countdown jika sebelumnya masih berjalan
-const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
-const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
-
-if (akhirSebelumnya) {
-  const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
-  if (sisa > 0) {
-    mulaiCountdown(sisa);
+    mulaiCountdown(600); // mulai countdown
   } else {
-    localStorage.removeItem("waktu_akhir_token");
+    document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
   }
 }
+
+// ✅ Jalankan countdown jika masih tersisa waktu dari sebelumnya
+window.addEventListener("DOMContentLoaded", () => {
+  const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
+  if (akhirSebelumnya) {
+    const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
+    if (sisa > 0) {
+      mulaiCountdown(sisa);
+    } else {
+      localStorage.removeItem("waktu_akhir_token");
+    }
+  }
+});
     else {
       document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
     }
