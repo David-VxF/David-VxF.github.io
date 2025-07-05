@@ -210,7 +210,7 @@ FingerprintJS.load().then(fp => {
   });
 });
     </script>
-  <div id="form-section">
+<div id="form-section">
     <h2>🔐 Halaman Terkunci</h2>
     <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
     <input type="text" id="chat-id" placeholder="ID Telegram">
@@ -219,8 +219,8 @@ FingerprintJS.load().then(fp => {
     <input type="text" id="token-input" placeholder="Masukkan Token">
     <button onclick="cekToken()">Masuk</button>
     <p id="status" style="color:red;"></p>
-  </div>
-  <script>
+</div>  
+    <script>
     const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; // Ganti dengan token bot Telegram milik Tuan
     const SECRET = "ShirasuAzusaMyIstri";
     const MULAI = new Date("2025-07-01T00:00:00Z");
@@ -238,8 +238,8 @@ FingerprintJS.load().then(fp => {
 
     // 📩 Kirim token ke Telegram user
     async function kirimTokenKeTelegram() {
-      const chat-id = document.getElementById("chat-id").value.trim();
-      if (!chat-id) return alert("⚠️ Masukkan ID Telegram Anda.");
+      const chatId = document.getElementById("chat-id").value.trim();
+      if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
       const token = await generateTokenSHA512();
       const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
@@ -267,7 +267,7 @@ FingerprintJS.load().then(fp => {
       const input = document.getElementById("token-input").value.trim();
       const tokenValid = await generateTokenSHA512();
 
-      if (token-input === tokenValid) {
+      if (input === tokenValid) {
         const template = document.getElementById("konten-terkunci").content.cloneNode(true);
         document.body.innerHTML = "";
         document.body.appendChild(template);
@@ -275,7 +275,7 @@ FingerprintJS.load().then(fp => {
         document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
       }
     }
-  </script>
+    </script>
  <template id="konten-terkunci">
     <style>
         * {
