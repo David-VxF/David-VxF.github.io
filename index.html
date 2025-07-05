@@ -249,7 +249,7 @@ FingerprintJS.load().then(fp => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: chat-id,
+          chat_id: chatId,
           text: pesan,
           parse_mode: "Markdown"
         })
@@ -276,7 +276,7 @@ FingerprintJS.load().then(fp => {
       }
     }
   </script>
- <template>
+ <template id="konten-terkunci">
     <style>
         * {
             margin: 0;
@@ -533,7 +533,6 @@ FingerprintJS.load().then(fp => {
     </style>
 </head>
 <body>
- <template id="konten-terkunci">
     <div class="container">
         <div class="header">
             <h1>WaifuCode Editor</h1>
@@ -605,7 +604,6 @@ FingerprintJS.load().then(fp => {
             </div>
         </div>
     </div>
- </template>
 <div>
     <script>
 // History management
