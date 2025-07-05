@@ -208,71 +208,72 @@
     <input type="text" id="token-input" placeholder="Masukkan Token">
     <button onclick="cekToken()">Masuk</button>
     <p id="status" style="color:red;"></p>
-</div> 
-    <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+</div> <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
 <script>
-  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
+  const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; 
+  const SECRET = "ShirasuAzusaMyIstri";
+  const MULAI = new Date("2025-07-01T00:00:00Z");
+  const verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
+  // Fungsi utama token
+  async function generateTokenSHA512() {
+    const now = new Date();
+    const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
+    const base = `waifutoken-${jamOffset}-${SECRET}`;
+    const data = new TextEncoder().encode(base);
+    const hash = await crypto.subtle.digest("SHA-512", data);
+    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return hex;
+  }
+
+  async function kirimTokenKeTelegram() {
+    const chatId = document.getElementById("chat-id").value.trim();
+    if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
+
+    const token = await generateTokenSHA512();
+    const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    const pesan = `🕐 Token SHA512 (Jam ${waktu}):\n\`\`\`\n${token}\n\`\`\``;
+
+    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: pesan,
+        parse_mode: "Markdown"
+      })
+    });
+
+    if (res.ok) {
+      alert("✅ Token berhasil dikirim ke Telegram Anda!");
+    } else {
+      document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
+    }
+  }
+
+  async function cekToken() {
+    const input = document.getElementById("token-input").value.trim();
+    const tokenValid = await generateTokenSHA512();
+
+    if (input === tokenValid) {
+      const template = document.getElementById("konten-terkunci").content.cloneNode(true);
+      document.body.innerHTML = "";
+      document.body.appendChild(template);
+    } else {
+      document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
+    }
+  }
+
+  // Fingerprint verifikasi dulu
   FingerprintJS.load().then(fp => {
     fp.get().then(result => {
       console.log("VisitorID:", result.visitorId);
       if (!verifiedDevices.includes(result.visitorId)) {
         document.body.innerHTML = "<h1>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
-      } else { 
-    const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; // Ganti dengan token bot Telegram milik Tuan
-    const SECRET = "ShirasuAzusaMyIstri";
-    const MULAI = new Date("2025-07-01T00:00:00Z");
-
-    // 🔐 Buat Token SHA-512 (128 hex chars)
-    async function generateTokenSHA512() {
-      const now = new Date();
-      const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
-      const base = `waifutoken-${jamOffset}-${SECRET}`;
-      const data = new TextEncoder().encode(base);
-      const hash = await crypto.subtle.digest("SHA-512", data);
-      const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-      return hex; // 128 karakter hex
-    }
-
-    // 📩 Kirim token ke Telegram user
-    async function kirimTokenKeTelegram() {
-      const chatId = document.getElementById("chat-id").value.trim();
-      if (!chat-id) return alert("⚠️ Masukkan ID Telegram Anda.");
-
-      const token = await generateTokenSHA512();
-      const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-      const pesan = `🕐 Token SHA512 (Jam ${waktu}):\n\`\`\`\n${token}\n\`\`\``;
-
-      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: pesan,
-          parse_mode: "Markdown"
-        })
-      });
-
-      if (res.ok) {
-        alert("✅ Token berhasil dikirim ke Telegram Anda!");
-      } else {
-        document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
       }
-    }
-
-    // ✅ Cek Token Input
-    async function cekToken() {
-      const input = document.getElementById("token-input").value.trim();
-      const tokenValid = await generateTokenSHA512();
-
-      if (input === tokenValid) {
-        const template = document.getElementById("konten-terkunci").content.cloneNode(true);
-        document.body.innerHTML = "";
-        document.body.appendChild(template);
-      } else {
-        document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
-      }
-    }
+      // ✅ Jika lolos, tidak perlu ubah tampilan karena form sudah ada
+    });
+  });
 </script>
  <template id="konten-terkunci">
     <style>
