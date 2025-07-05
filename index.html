@@ -840,6 +840,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+  });
     </script>
+    <noscript>
+  <style>
+    body { display: none !important; }
+    html::before {
+      content: "⚠️ Halaman ini memerlukan JavaScript untuk berjalan.";
+      display: block;
+      text-align: center;
+      padding: 4em;
+      font-size: 1.2em;
+      color: red;
+      background: #fff;
+    }
+  </style>
+    </noscript>
 </body>
 </html>
