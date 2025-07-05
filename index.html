@@ -346,8 +346,7 @@ window.addEventListener("DOMContentLoaded", () => {
             position: relative;
             overflow-x: hidden;
         }
-
-        /* Background Image Placeholder */
+            
         body::before {
             content: '';
             position: fixed;
@@ -689,12 +688,13 @@ window.addEventListener("DOMContentLoaded", () => {
         .icon-placeholder {
             width: 20px;
             height: 20px;
-            background: rgba(255, 255, 255, 0.2);
+            background-image: url('icon1.jpg');
+            background-size: cover;
+            background-position: center;
             border-radius: 4px;
             display: inline-block;
             margin-right: 8px;
-            position: relative;
-        }
+            }
 
         .icon-placeholder::after {
             content: '🖼️';
