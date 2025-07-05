@@ -840,15 +840,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
-  });
     </script>
- <script>
-  document.addEventListener('contextmenu', function (e) {
-    e.preventDefault();
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const preventAll = e => e.preventDefault();
+    document.addEventListener("contextmenu", preventAll);
+    document.body.addEventListener("contextmenu", preventAll);
+    window.addEventListener("contextmenu", preventAll);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.ctrlKey && ["u", "s"].includes(e.key.toLowerCase())) e.preventDefault();
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase()))) {
+        e.preventDefault();
+      }
+    });
+
+    setInterval(() => {
+      const d = window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160;
+      if (d) document.body.innerHTML = "<h1 style='color:red;text-align:center;'>🚫 Akses dilarang: DevTools terdeteksi!</h1>";
+    }, 600);
   });
- </script>
+</script>
     <noscript>
   <style>
     body { display: none !important; }
