@@ -217,22 +217,31 @@
 
   // Fungsi utama token
   async function generateTokenSHA512() {
-    const now = new Date();
-    const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
-    const base = `waifutoken-${jamOffset}-${SECRET}`;
-    const data = new TextEncoder().encode(base);
-    const hash = await crypto.subtle.digest("SHA-512", data);
-    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-    return hex;
-  }
+  const now = new Date();
+
+  // Token berdasarkan interval 10 menit
+  const mulai = new Date("2025-07-01T00:00:00Z");
+  const offsetMenit = Math.floor((now - mulai) / (1000 * 60 * 10)); // tiap 10 menit
+  const tanggal = now.toISOString().split("T")[0]; // YYYY-MM-DD
+  const base = `waifutoken-${offsetMenit}-${tanggal}-${SECRET}`;
+
+  const data = new TextEncoder().encode(base);
+  const hash = await crypto.subtle.digest("SHA-512", data);
+  const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return hex;
+}
 
   async function kirimTokenKeTelegram() {
     const chatId = document.getElementById("chat-id").value.trim();
     if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
     const token = await generateTokenSHA512();
-    const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-    const pesan = `🕐 Token SHA512 (Jam ${waktu}):\n\`\`\`\n${token}\n\`\`\``;
+    const menit = now.getMinutes();
+    const blok = Math.floor(menit / 10) * 10;
+    const blokBerikut = (blok + 10) % 60;
+    const jam = now.getHours().toString().padStart(2, "0");
+    const label = `${jam}:${blok.toString().padStart(2, "0")} – ${jam}:${blokBerikut.toString().padStart(2, "0")}`;
+    const pesan = `🕐 Token SHA512 (berlaku ${label}):\n\`\`\`\n${token}\n\`\`\`\n\nToken ini hanya berlaku selama 10 menit dan tidak akan sama meskipun jam yang sama di hari berbeda.`;
 
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: "POST",
@@ -246,6 +255,22 @@
 
     if (res.ok) {
       alert("✅ Token berhasil dikirim ke Telegram Anda!");
+      // ⏳ Countdown setelah token terkirim
+const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
+tombol.disabled = true;
+
+let waktu = 600; // 10 menit
+const originalText = tombol.textContent;
+
+const interval = setInterval(() => {
+  waktu--;
+  tombol.textContent = `⏳ Kirim Token (${waktu}s)`;
+  if (waktu <= 0) {
+    clearInterval(interval);
+    tombol.disabled = false;
+    tombol.textContent = originalText;
+  }
+}, 1000);
     } else {
       document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
     }
