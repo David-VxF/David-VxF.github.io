@@ -304,12 +304,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
-    else {
-      document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
-    }
-  }
-
-  async function cekToken() {
+    async function cekToken() {
     const input = document.getElementById("token-input").value.trim();
     const tokenValid = await generateTokenSHA512();
 
