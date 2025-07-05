@@ -283,6 +283,19 @@ function mulaiCountdown(durasi) {
 
   mulaiCountdown(600); // mulai 10 menit
     }
+
+// ⏳ Jalankan countdown jika sebelumnya masih berjalan
+const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
+const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
+
+if (akhirSebelumnya) {
+  const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
+  if (sisa > 0) {
+    mulaiCountdown(sisa);
+  } else {
+    localStorage.removeItem("waktu_akhir_token");
+  }
+}
     else {
       document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
     }
@@ -314,19 +327,6 @@ function mulaiCountdown(durasi) {
     }
   });
 });
-
-// ⏳ Jalankan countdown jika sebelumnya masih berjalan
-const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
-const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
-
-if (akhirSebelumnya) {
-  const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
-  if (sisa > 0) {
-    mulaiCountdown(sisa);
-  } else {
-    localStorage.removeItem("waktu_akhir_token");
-  }
-}
 </script>
  <template id="konten-terkunci">
     <style>
