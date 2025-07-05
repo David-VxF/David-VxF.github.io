@@ -236,7 +236,7 @@ FingerprintJS.load().then(fp => {
   }
 
   async function kirimTokenKeTelegram() {
-    const chatId = document.getElementById("chat-id").value.trim();
+    const chatId = document.getElementById("chatId").value.trim();
     if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
     const token = await generateTokenSaatIni();
