@@ -199,7 +199,6 @@
             100% { left: 100%; }
         }
  </style>
-
     <script src="https://openfpcdn.io/fingerprintjs/v3">
  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
@@ -250,7 +249,7 @@ FingerprintJS.load().then(fp => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          chat_id: chatId,
+          chat_id: chat-id,
           text: pesan,
           parse_mode: "Markdown"
         })
@@ -268,7 +267,7 @@ FingerprintJS.load().then(fp => {
       const input = document.getElementById("token-input").value.trim();
       const tokenValid = await generateTokenSHA512();
 
-      if (input === tokenValid) {
+      if (token-input === tokenValid) {
         const template = document.getElementById("konten-terkunci").content.cloneNode(true);
         document.body.innerHTML = "";
         document.body.appendChild(template);
