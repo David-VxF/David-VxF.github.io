@@ -260,6 +260,11 @@
     </style>
 </head>
 <body>
+ <h3>🔐 Minta Token Akses</h3>
+<input type="text" id="chat-id-input" placeholder="Masukkan ID Telegram Anda" style="width: 300px;">
+<button onclick="kirimTokenViaBot()">Kirim Token</button>
+</div>
+ <template = "konten-terkunci">
     <div class="container">
         <div class="header">
             <h1>WaifuCode Editor</h1>
@@ -331,6 +336,7 @@
             </div>
         </div>
     </div>
+ </template>
 <script src="https://openfpcdn.io/fingerprintjs/v3">
  let verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
@@ -342,10 +348,7 @@ FingerprintJS.load().then(fp => {
   });
 });
 </script>
-<h3>🔐 Minta Token Akses</h3>
-<input type="text" id="chat-id-input" placeholder="Masukkan ID Telegram Anda" style="width: 300px;">
-<button onclick="kirimTokenViaBot()">Kirim Token</button>
-
+<div>
 <script>
 async function kirimTokenViaBot() {
   const chatId = document.getElementById("chat-id-input").value.trim();
