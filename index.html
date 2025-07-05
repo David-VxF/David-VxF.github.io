@@ -260,11 +260,18 @@
     </style>
 </head>
 <body>
- <h3>🔐 Minta Token Akses</h3>
-<input type="text" id="chat-id-input" placeholder="Masukkan ID Telegram Anda" style="width: 300px;">
-<button onclick="kirimTokenViaBot()">Kirim Token</button>
-</div>
- <template = "konten-terkunci">
+  <!-- 🔐 Form minta token via Telegram -->
+  <div id="form-section">
+    <h2>🔐 Halaman Terkunci</h2>
+    <p>Masukkan ID Telegram Anda untuk menerima token akses via bot.</p>
+    <input type="text" id="chat-id" placeholder="ID Telegram">
+    <button onclick="kirimTokenKeTelegram()">Kirim Token</button>
+    <br><br>
+    <input type="text" id="token-input" placeholder="Masukkan Token">
+    <button onclick="cekToken()">Masuk</button>
+    <p id="status" style="color:red;"></p>
+  </div>
+ <template id="konten-terkunci">
     <div class="container">
         <div class="header">
             <h1>WaifuCode Editor</h1>
@@ -349,39 +356,56 @@ FingerprintJS.load().then(fp => {
 });
 </script>
 <div>
-<script>
-async function kirimTokenViaBot() {
-  const chatId = document.getElementById("chat-id-input").value.trim();
-  if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda terlebih dahulu.");
-
+  <script>
   const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY";
-  const SECRET = "ShirasuAzusaMyIstri"; 
-  const MULAI = new Date("2025-07-01T00:00:00Z");
+  const SECRET = "ShirasuAzusaMyIstri";
+  const MULAI = new Date("2025-07-01T00:00:00Z");    // Titik awal perhitungan jam
 
-  const now = new Date();
-  const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
-  const base = `waifutoken-${jamOffset}-${SECRET}`;
-  const data = new TextEncoder().encode(base);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  const token = hex.slice(0, 10);
-
-  const waktu = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-  const pesan = `🕐 Token Akses Jam ${waktu}:\n🔐 ${token}`;
-
-  const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ chat_id: chatId, text: pesan })
-  });
-
-  if (response.ok) {
-    alert("✅ Token berhasil dikirim ke Telegram Anda!");
-  } else {
-    alert("❌ Gagal mengirim token. Pastikan ID Telegram benar.");
+  async function generateTokenSaatIni() {
+    const now = new Date();
+    const jamOffset = Math.floor((now - MULAI) / (1000 * 60 * 60));
+    const base = `waifutoken-${jamOffset}-${SECRET}`;
+    const data = new TextEncoder().encode(base);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return hex.slice(0, 10);
   }
-}
-</script>
+
+  async function kirimTokenKeTelegram() {
+    const chatId = document.getElementById("chat-id").value.trim();
+    if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
+
+    const token = await generateTokenSaatIni();
+    const waktu = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    const pesan = `🕐 Token Akses Jam ${waktu}:\n🔐 ${token}`;
+
+    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: pesan })
+    });
+
+    if (res.ok) {
+      alert("✅ Token berhasil dikirim ke Telegram Anda!");
+    } else {
+      document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
+    }
+  }
+
+  async function cekToken() {
+    const input = document.getElementById("token-input").value.trim();
+    const tokenValid = await generateTokenSaatIni();
+
+    if (input === tokenValid) {
+      // ✔️ Token cocok → tampilkan konten
+      const template = document.getElementById("konten-terkunci").content.cloneNode(true);
+      document.body.innerHTML = "";
+      document.body.appendChild(template);
+    } else {
+      document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
+    }
+  }
+  </script>
     <script>
 // History management
 let textHistory = [''];
