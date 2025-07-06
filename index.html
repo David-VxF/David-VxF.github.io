@@ -231,7 +231,7 @@ FingerprintJS.load().then(fp => {
     <input type="text" id="token-input" placeholder="Masukkan Token">
     <button onclick="cekToken()">Masuk</button>
     <p id="status" style="color:red;"></p>
-</div> <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+</div>
 <script>
   const BOT_TOKEN = "7551561939:AAFlx9YeSBukd2vm0anOt7xpHNo72SrU_JY"; 
   const SECRET = "ShirasuAzusaMyIstri";
@@ -335,20 +335,6 @@ function mulaiCountdown(durasi) {
       document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
     }
   }
-
-  // Fingerprint verifikasi dulu
-  FingerprintJS.load().then(fp => {
-  fp.get().then(result => {
-    console.log("VisitorID:", result.visitorId);
-    if (!verifiedDevices.includes(result.visitorId)) {
-      document.body.innerHTML = "<h1 style='color:red;text-align:center;padding-top:30vh;'>🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>";
-    } else {
-      // ✔️ Lolos fingerprint → tampilkan form
-      document.getElementById("loading").style.display = "none";
-      document.getElementById("form-section").style.display = "block";
-    }
-  });
-});
 </script>
     </template>
     <div id="gate-message">
