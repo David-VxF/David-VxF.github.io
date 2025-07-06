@@ -4,18 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaifuCode Editor</title>
-    <script src="https://openfpcdn.io/fingerprintjs/v3" defer></script>
-   <script defer>
-    const verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
+    <!-- ✅ Ganti CDN FingerprintJS -->
+<script src="https://unpkg.com/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
 
-    window.addEventListener("DOMContentLoaded", () => {
+<script defer>
+  const verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const gateElem = document.getElementById("gate-message");
+    const idElem = document.getElementById("device-id");
+
+    // Pastikan FingerprintJS tersedia
+    const startVerification = () => {
+      if (!window.FingerprintJS || !window.FingerprintJS.load) {
+        console.warn("⏳ Menunggu FingerprintJS tersedia...");
+        return setTimeout(startVerification, 200);
+      }
+
       FingerprintJS.load().then(fp => {
         fp.get().then(result => {
           const visitorId = result.visitorId;
           console.log("🔍 ID Device:", visitorId);
 
-          const gateElem = document.getElementById("gate-message");
-          const idElem = document.getElementById("device-id");
+          if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
 
           if (verifiedDevices.includes(visitorId)) {
             const template = document.getElementById("konten-terverifikasi");
@@ -36,12 +47,26 @@
             }
           } else {
             if (gateElem) gateElem.style.display = "block";
-            if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
           }
+        }).catch(err => {
+          if (idElem) idElem.textContent = "❗ Gagal mengambil ID: " + err;
         });
+      }).catch(err => {
+        if (idElem) idElem.textContent = "❗ Gagal memuat FingerprintJS: " + err;
       });
-    });
-  </script>
+    };
+
+    startVerification(); // Mulai proses
+  });
+</script>
+
+<!-- ✅ Elemen tampilan fallback -->
+<div id="gate-message" style="display: none;">
+  <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
+  <p id="device-id" style="text-align:center;color:#666;font-size:14px;margin-top:10px;">
+    Menunggu ID perangkat...
+  </p>
+</div>
     <template id="konten-terverifikasi">
  <style>
         * {
@@ -797,10 +822,6 @@ function mulaiCountdown(durasi) {
     </style>
 </head>
 <body>
-    <div id="gate-message" style="display: none;">
-    <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
-    <p id="device-id" style="text-align:center;color:#666;font-size:14px;margin-top:10px;"></p>
-    </div>
     <div class="container">
         <div class="header">
             <h1>WaifuCode Editor</h1>
