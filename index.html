@@ -230,7 +230,19 @@
   const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
   return hex;
 }
-
+    
+window.addEventListener("DOMContentLoaded", () => {
+  const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
+  if (akhirSebelumnya) {
+    const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
+    if (sisa > 0) {
+      mulaiCountdown(sisa);
+    } else {
+      localStorage.removeItem("waktu_akhir_token");
+    }
+  }
+});
+    
 function mulaiCountdown(durasi) {
   const tombol = document.querySelector("button[onclick='kirimTokenKeTelegram()']");
   tombol.disabled = true;
