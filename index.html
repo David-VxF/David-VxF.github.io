@@ -37,6 +37,15 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+    fp.get().then(result => {
+  const visitorId = result.visitorId;
+  console.log("🔍 ID Device:", visitorId);
+  alert("ID Device kamu adalah:\n" + visitorId);  // Tambahan untuk HP
+
+  if (verifiedDevices.includes(visitorId)) {
+    // ...
+  }
+});
 </script>
     <div id="gate-message">
   <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
