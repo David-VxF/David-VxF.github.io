@@ -33,18 +33,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
       } else {
         document.getElementById("gate-message").style.display = "block";
+
+        const idElem = document.getElementById("device-id");
+  if (idElem) {
+    idElem.textContent = "ID perangkat Anda: " + visitorId;
+  
+        }
       }
     });
   });
-});
-    fp.get().then(result => {
-  const visitorId = result.visitorId;
-  console.log("🔍 ID Device:", visitorId);
-  alert("ID Device kamu adalah:\n" + visitorId);  // Tambahan untuk HP
-
-  if (verifiedDevices.includes(visitorId)) {
-    // ...
-  }
 });
 </script>
     <div id="gate-message">
