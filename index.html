@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaifuCode Editor</title>
-    <!-- ✅ Ganti CDN FingerprintJS -->
-    <span>
 <script src="https://unpkg.com/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
 <script defer>
   const verifiedDevices = ["c2bc23abb37092a43a87576c8c7f6705", "5ac28ddd7a2f18fbd725077dfb7c308a", "1862c81e7ae9934a8a915f03cc4f3049"];
@@ -66,7 +64,6 @@
             Menunggu ID perangkat...
         </p>
     </div>
-    </span>
     <template id="konten-terverifikasi">
  <style>
         * {
@@ -386,27 +383,17 @@ function mulaiCountdown(durasi) {
 
         body {
             font-family: 'Segoe UI', sans-serif;
-            background-image: url('bg2.webp'); /* ← pastikan file ada dan path sesuai */
+            background-image: url('bg2.webp');            
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
             color: #fff;
             min-height: 100vh;
             padding: 20px;
-            position: relative;
+            position: fixed;
             overflow-x: hidden;
         }
             
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23ff6b6b" width="1200" height="800" opacity="0.1"/><text x="600" y="400" font-family="Arial" font-size="48" fill="%23666" text-anchor="middle" opacity="0.3">Background Image Placeholder</text></svg>') center/cover;
-            z-index: -1;
-        }
 
         .container {
             max-width: 1200px;
@@ -747,7 +734,7 @@ function mulaiCountdown(durasi) {
             }
 
         .icon-placeholder::after {
-            content: '🖼️';
+            content: '';
             position: absolute;
             top: 50%;
             left: 50%;
