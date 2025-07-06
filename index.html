@@ -4,6 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaifuCode Editor</title>
+    <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
+<script>
+const verifiedDevices = [
+  "r9yiTRMgIezKu30ypu1H", // Tuan
+  "x9y8z7k6l5m4" // Device lain
+];
+
+FingerprintJS.load().then(fp => {
+  fp.get().then(result => {
+    const visitorId = result.visitorId;
+    console.log("🔍 ID Device:", visitorId);
+
+    if (verifiedDevices.includes(visitorId)) {
+      // ✅ Device cocok → tampilkan template
+      const template = document.getElementById("konten-terverifikasi").content.cloneNode(true);
+      const gate = document.getElementById("gate-message");
+      gate.replaceWith(template); // ganti pesan akses dengan konten sebenarnya
+    } else {
+      // ❌ Tidak cocok → tidak lakukan apa-apa (gate tetap tampil)
+    }
+  });
+});
+</script>
+    <template id="konten-terverifikasi">
  <style>
         * {
             margin: 0;
@@ -327,6 +351,10 @@ function mulaiCountdown(durasi) {
   });
 });
 </script>
+    </template>
+    <div id="gate-message">
+  <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
+    </div>
  <template id="konten-terkunci">
     <style>
         * {
