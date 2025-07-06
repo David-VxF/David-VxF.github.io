@@ -4,52 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaifuCode Editor</title>
-    <span>
-    <script src="https://openfpcdn.io/fingerprintjs/v3"></script>
-<script>
-const verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
+    <script src="https://openfpcdn.io/fingerprintjs/v3" defer></script>
+   <script defer>
+    const verifiedDevices = ["r9yiTRMgIezKu30ypu1H"];
 
-window.addEventListener("DOMContentLoaded", () => {
-  FingerprintJS.load().then(fp => {
-    fp.get().then(result => {
-      const visitorId = result.visitorId;
-      console.log("🔍 ID Device:", visitorId);
+    window.addEventListener("DOMContentLoaded", () => {
+      FingerprintJS.load().then(fp => {
+        fp.get().then(result => {
+          const visitorId = result.visitorId;
+          console.log("🔍 ID Device:", visitorId);
 
-      if (verifiedDevices.includes(visitorId)) {
-        // ✅ Sisipkan template ke DOM
-        const template = document.getElementById("konten-terverifikasi").content.cloneNode(true);
-        const gate = document.getElementById("gate-message");
-        gate.replaceWith(template);
+          const gateElem = document.getElementById("gate-message");
+          const idElem = document.getElementById("device-id");
 
-        // ✅ Setelah template disisipkan, baru jalankan countdown jika ada
-        const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
-        if (akhirSebelumnya) {
-          const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
-          if (sisa > 0 && document.querySelector("button[onclick='kirimTokenKeTelegram()']")) {
-            mulaiCountdown(sisa);
+          if (verifiedDevices.includes(visitorId)) {
+            const template = document.getElementById("konten-terverifikasi");
+            if (template && gateElem) {
+              const clone = template.content.cloneNode(true);
+              gateElem.replaceWith(clone);
+
+              // Jalankan countdown token jika ada
+              const akhirSebelumnya = localStorage.getItem("waktu_akhir_token");
+              if (akhirSebelumnya) {
+                const sisa = Math.floor((parseInt(akhirSebelumnya) - Date.now()) / 1000);
+                if (sisa > 0 && document.querySelector("button[onclick='kirimTokenKeTelegram()']")) {
+                  mulaiCountdown(sisa);
+                } else {
+                  localStorage.removeItem("waktu_akhir_token");
+                }
+              }
+            }
           } else {
-            localStorage.removeItem("waktu_akhir_token");
+            if (gateElem) gateElem.style.display = "block";
+            if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
           }
-        }
-
-      } else {
-        document.getElementById("gate-message").style.display = "block";
-
-        const idElem = document.getElementById("device-id");
-  if (idElem) {
-    idElem.textContent = "ID perangkat Anda: " + visitorId;
-  
-        }
-      }
+        });
+      });
     });
-  });
-});
-</script>
-    <div id="gate-message">
-  <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
-        <p id="device-id" style="text-align:center;color:#666;font-size:14px;margin-top:10px;"></p>
-    </div>
-    </span>
+  </script>
+  <div id="gate-message" style="display: none;">
+    <h1 style="text-align:center;color:red;">🚫 Akses ditolak. Perangkat tidak terverifikasi.</h1>
+    <p id="device-id" style="text-align:center;color:#666;font-size:14px;margin-top:10px;"></p>
+  </div>
     <template id="konten-terverifikasi">
  <style>
         * {
