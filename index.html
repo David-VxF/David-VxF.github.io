@@ -325,19 +325,22 @@ function mulaiCountdown(durasi) {
 }
 
 // ✅ Kirim token & aktifkan countdown
-    async function kirimTokenKeTelegram() {
+  async function kirimTokenKeTelegram() {
   const chatId = document.getElementById("chat-id").value.trim();
   if (!chatId) return alert("⚠️ Masukkan ID Telegram Anda.");
 
-  const token = await generateTokenSHA512();
-  const now = new Date();
-  const menit = now.getMinutes();
-  const blok = Math.floor(menit / 10) * 10;
-  const blokBerikut = (blok + 10) % 60;
-  const jam = now.getHours().toString().padStart(2, "0");
-  const label = `${jam}:${blok.toString().padStart(2, "0")} – ${jam}:${blokBerikut.toString().padStart(2, "0")}`;
+  const now = Date.now();
+  const expiredAt = now + 10 * 60 * 1000;
 
-  const pesan = `🕐 Token SHA512 (berlaku ${label}):\n\`\`\`\n${token}\n\`\`\`\n\nToken ini hanya berlaku selama 10 menit dan tidak akan sama meskipun jam yang sama di hari berbeda.`;
+  // Simpan timestamp pengiriman
+  localStorage.setItem("token_sent_at", now.toString());
+  localStorage.setItem("token_expired_at", expiredAt.toString());
+
+  const base = `waifutoken-${now}-ShirasuAzusaMyIstri`;
+  const token = await hashSHA512Truncated(base, 10); // → hasil token 10 digit
+
+  const waktu = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const pesan = `🔐 Token Akses (dikirim ${waktu}, berlaku 10 menit):\n\`\`\`\n${token}\n\`\`\``;
 
   const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
@@ -351,26 +354,33 @@ function mulaiCountdown(durasi) {
 
   if (res.ok) {
     alert("✅ Token berhasil dikirim ke Telegram Anda!");
-    const akhir = Date.now() + 10 * 60 * 1000;
-    localStorage.setItem("waktu_akhir_token", akhir.toString());
-    mulaiCountdown(600);
+    mulaiCountdown(600); // countdown 10 menit
   } else {
-    document.getElementById("status").textContent = "❌ Gagal mengirim. Pastikan bot dan ID Anda aktif.";
+    document.getElementById("status").textContent = "❌ Gagal mengirim.";
   }
-    }
+   }
     
     async function cekToken() {
-    const input = document.getElementById("token-input").value.trim();
-    const tokenValid = await generateTokenSHA512();
+  const input = document.getElementById("token-input").value.trim();
+  const sentAt = localStorage.getItem("token_sent_at");
+  const expiredAt = parseInt(localStorage.getItem("token_expired_at") || "0");
 
-    if (input === tokenValid) {
-      const template = document.getElementById("konten-terkunci").content.cloneNode(true);
-      document.body.innerHTML = "";
-      document.body.appendChild(template);
-    } else {
-      document.getElementById("status").textContent = "❌ Token salah atau sudah kedaluwarsa.";
-    }
+  if (!sentAt || Date.now() > expiredAt) {
+    document.getElementById("status").textContent = "❌ Token kadaluarsa atau belum dikirim.";
+    return;
   }
+
+  const base = `waifutoken-${sentAt}-ShirasuAzusaMyIstri`;
+  const validToken = await hashSHA512Truncated(base, 10);
+
+  if (input === validToken) {
+    const template = document.getElementById("konten-terkunci").content.cloneNode(true);
+    document.body.innerHTML = "";
+    document.body.appendChild(template);
+  } else {
+    document.getElementById("status").textContent = "❌ Token salah.";
+  }
+}
 </script>
     <template id="konten-terkunci">
     <style>
