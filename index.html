@@ -327,7 +327,7 @@ async function hashSHA512Truncated(text, length = 10) {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest("SHA-512", data);
   const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return hex.slice(0, length);
+  return hex;
     }
 // ✅ Kirim token & aktifkan countdown
   async function kirimTokenKeTelegram() {
@@ -345,7 +345,7 @@ async function hashSHA512Truncated(text, length = 10) {
   const token = await hashSHA512Truncated(base, 10); // → hasil token 10 digit
 
   const waktu = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const pesan = `🔐 Token Akses (dikirim ${waktu}, berlaku 10 menit):\n\`\`\`\n${token}\n\`\`\``;
+  const pesan = `🔐 Token SHA512 (berlaku 10 menit):\n\`\`\`\n${token}\n\`\`\``;
 
   const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
