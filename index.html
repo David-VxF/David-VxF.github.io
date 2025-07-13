@@ -429,18 +429,6 @@ async function hashSHA512Truncated(text, length = 10) {
     };
          </script>
 </template>
-        <script>
-function redirectToTemplate(templateId) {
-  const template = document.getElementById(templateId);
-  if (template) {
-    const content = template.content.cloneNode(true);
-    document.body.innerHTML = "";
-    document.body.appendChild(content);
-  } else {
-    alert("Template tidak ditemukan: " + templateId);
-  }
-}
-        </script>
  <template id="konten-1">
     <style>
         * {
