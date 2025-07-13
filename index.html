@@ -416,6 +416,18 @@ async function hashSHA512Truncated(text, length = 10) {
 
   <button onclick="redirectToTemplate('konten-1')">Pilihan 1</button>
   <button onclick="redirectToTemplate('konten-2')">Pilihan 2</button>
+         <script>
+    window.redirectToTemplate = function(templateId) {
+      const template = document.getElementById(templateId);
+      if (template) {
+        const content = template.content.cloneNode(true);
+        document.body.innerHTML = "";
+        document.body.appendChild(content);
+      } else {
+        alert("Template tidak ditemukan: " + templateId);
+      }
+    };
+         </script>
 </template>
         <script>
 function redirectToTemplate(templateId) {
