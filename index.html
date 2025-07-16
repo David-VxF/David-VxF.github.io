@@ -41,13 +41,14 @@
       };  
   
       emailjs.send("service_vxq85ed", "template_l21v83c", params)  
-        .then(() => {  
-          alert(`Token verifikasi berhasil dikirim ke ${email}!\nToken: ${token}`);  
-        })  
-        .catch(err => {  
-          console.error("Gagal mengirim email:", err);  
-          alert("Gagal mengirim email. Periksa kembali konfigurasi.");  
-        });  
+        .then((res) => {
+  console.log("Response dari EmailJS:", res);
+  alert(`Token verifikasi berhasil dikirim ke ${email}!\nToken: ${token}`);
+})
+.catch(err => {
+  console.error("Gagal mengirim email:", err);
+  alert("Gagal mengirim email:\n" + JSON.stringify(err));
+}); 
     }  
   </script>  
 </head>  
