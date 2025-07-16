@@ -2,12 +2,15 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Registrasi dengan Verifikasi Email</title>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <title>Registrasi dengan Supabase</title>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
-    emailjs.init("SLxbK8YV8CrMxrkPE"); // Public key Tuan
+    emailjs.init("SLxbK8YV8CrMxrkPE"); // Public key EmailJS
 
-    const endpoint = "https://script.google.com/macros/s/AKfycbxRgjTbfAXHSjzg8ikp8b9Is3BqJnYeQpmj8xqsEZDZCvH9Gvt--Sofw03coDiTCKLnTw/exec";
+    const SUPABASE_URL = "https://murndwahrjygdtwqvmgs.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cm5kd2Focmp5Z2R0d3F2bWdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODA4NDQsImV4cCI6MjA2ODI1Njg0NH0.-8RvrC-JkgnxNbR0iZPJIpPI2pgdFOXGkR2Zk1z91Sc";
+    const SUPABASE_TABLE = "accounts";
+
     const encoder = new TextEncoder();
 
     let token = "";
@@ -65,7 +68,7 @@
         salt: salt,
         email: email,
         verified: true,
-        reset_token: ""
+        reset_token: null
       };
 
       emailjs.send("service_vxq85ed", "template_l21v83c", {
@@ -86,18 +89,27 @@
       const kode = document.getElementById("kode-token").value.trim();
       if (kode !== token) return alert("Kode salah!");
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(pendingData)
-      });
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify(pendingData)
+        });
 
-      const teks = await res.text();
-      if (teks === "OK") {
-        alert("Registrasi berhasil disimpan ke spreadsheet!");
-        document.getElementById("verifikasi").style.display = "none";
-      } else {
-        alert("Gagal menyimpan data: " + teks);
+        const result = await res.json();
+        if (res.ok) {
+          alert("Registrasi berhasil disimpan ke Supabase!");
+          document.getElementById("verifikasi").style.display = "none";
+        } else {
+          alert("Gagal menyimpan: " + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("Gagal menghubungi Supabase: " + err.message);
       }
     }
   </script>
