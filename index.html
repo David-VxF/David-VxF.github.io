@@ -43,7 +43,7 @@
       emailjs.send("service_vxq85ed", "template_l21v83c", params)  
         .then((res) => {
   console.log("Response dari EmailJS:", res);
-  alert(`Token verifikasi berhasil dikirim ke ${email}!\nToken: ${token}`);
+  alert(`Token verifikasi berhasil dikirim ke ${email}!\nSilahkan buka Gmail untuk mendapatkan kode verifikasi`);
 })
 .catch(err => {
   console.error("Gagal mengirim email:", err);
