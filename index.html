@@ -58,9 +58,12 @@
 
     async function sendVerificationEmail(email, name, code) {
       return await emailjs.send("service_vxq85ed", "template_l21v83c", {
-        user_name: name,
-        user_email: email,
-        verify_code: code
+  user_name: uname,
+  user_email: email,
+  verify_code: regCode,
+  website_link: "https://example.com", // ganti dengan link Tuan
+  expire_time: "14:32",                // waktu sekarang + 15 menit
+  company_name: "Tuan Auth"
       });
     }
 
