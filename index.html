@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Login with Email Verification</title>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+    // === INIT EMAILJS ===
+    (function() {
+      emailjs.init("SLxbK8YV8CrMxrkPE"); // Ganti dengan USER ID dari EmailJS
+    })();
+
+    const encoder = new TextEncoder();
+
+    async function sha512(str) {
+      const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(str));
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function getUTF8Padding(input, length = 32) {
+      const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(input));
+      const bytes = new Uint8Array(buffer);
+      let result = "";
+      for (let i = 0; result.length < length; i += 4) {
+        const idx = i % (bytes.length - 3);
+        const cp = ((bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3]) >>> 0;
+        const codePoint = cp % 0x10FFFF;
+        if (codePoint < 0x20 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) continue;
+        try { result += String.fromCodePoint(codePoint); } catch { continue; }
+      }
+      return result;
+    }
+
+    function generateSalt(length = 16) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => chars[b % chars.length]).join('');
+    }
+
+    async function hashUsername(username) {
+      return await sha512(username.trim().toLowerCase());
+    }
+
+    async function hashPassword(password, salt, iterations = 100000) {
+      let base = password + salt + await getUTF8Padding(password);
+      for (let i = 0; i < iterations; i++) {
+        base = await sha512(base);
+      }
+      return base;
+    }
+
+    function generateCode(length = 6) {
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => (b % 10).toString()).join('');
+    }
+
+    // === REGISTER ===
+    let regCode = "";
+    let pendingUser = null;
+
+    async function sendVerificationEmail(email, name, code) {
+      return await emailjs.send("service_vxq85ed", "template_l21v83c", {
+        user_name: name,
+        user_email: email,
+        verify_code: code
+      });
+    }
+
+    async function handleRegister() {
+      const uname = document.getElementById("reg-username").value;
+      const pass = document.getElementById("reg-password").value;
+      const email = document.getElementById("reg-email").value;
+
+      regCode = generateCode();
+      pendingUser = { uname, pass, email };
+
+      await sendVerificationEmail(email, uname, regCode);
+      alert("Kode verifikasi dikirim ke email.");
+      document.getElementById("verify-box").style.display = "block";
+    }
+
+    async function verifyCode() {
+      const code = document.getElementById("verify-code").value.trim();
+      if (code !== regCode) return alert("Kode salah!");
+
+      const salt = generateSalt();
+      const unameHash = await hashUsername(pendingUser.uname);
+      const passHash = await hashPassword(pendingUser.pass, salt);
+
+      const userData = {
+        usernameHash: unameHash,
+        passwordHash: passHash,
+        salt: salt,
+        email: pendingUser.email,
+        verified: true,
+        resetToken: null
+      };
+
+      localStorage.setItem(`user_${unameHash}`, JSON.stringify(userData));
+      alert("Registrasi berhasil!");
+    }
+
+    // === RESET PASSWORD ===
+    async function requestReset() {
+      const uname = document.getElementById("reset-username").value;
+      const unameHash = await hashUsername(uname);
+      const user = JSON.parse(localStorage.getItem(`user_${unameHash}`));
+      if (!user) return alert("User tidak ditemukan.");
+
+      const token = generateCode(8);
+      user.resetToken = token;
+      localStorage.setItem(`user_${unameHash}`, JSON.stringify(user));
+
+      await emailjs.send("service_vxq85ed", "template_jirt3il", {
+        user_name: uname,
+        user_email: user.email,
+        reset_token: token
+      });
+      alert("Token reset telah dikirim ke email.");
+    }
+
+    async function resetPassword() {
+      const uname = document.getElementById("reset-username").value;
+      const token = document.getElementById("reset-token").value.trim();
+      const newpass = document.getElementById("reset-newpass").value;
+
+      const unameHash = await hashUsername(uname);
+      const user = JSON.parse(localStorage.getItem(`user_${unameHash}`));
+      if (!user || user.resetToken !== token) return alert("Token salah!");
+
+      const newSalt = generateSalt();
+      const newHash = await hashPassword(newpass, newSalt);
+
+      user.passwordHash = newHash;
+      user.salt = newSalt;
+      user.resetToken = null;
+
+      localStorage.setItem(`user_${unameHash}`, JSON.stringify(user));
+      alert("Password berhasil di-reset!");
+    }
+  </script>
+</head>
+<body>
+  <h2>Registrasi</h2>
+  <input id="reg-username" placeholder="Username"><br>
+  <input id="reg-password" type="password" placeholder="Password"><br>
+  <input id="reg-email" type="email" placeholder="Email"><br>
+  <button onclick="handleRegister()">Daftar</button>
+
+  <div id="verify-box" style="display:none">
+    <input id="verify-code" placeholder="Kode Verifikasi"><br>
+    <button onclick="verifyCode()">Verifikasi</button>
+  </div>
+
+  <h2>Lupa Password</h2>
+  <input id="reset-username" placeholder="Username"><br>
+  <button onclick="requestReset()">Kirim Token Reset</button><br><br>
+
+  <input id="reset-token" placeholder="Token dari email"><br>
+  <input id="reset-newpass" type="password" placeholder="Password Baru"><br>
+  <button onclick="resetPassword()">Reset Password</button>
+</body>
+</html>
