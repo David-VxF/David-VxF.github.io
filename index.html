@@ -1,65 +1,118 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <meta charset="UTF-8">  
-  <title>Kirim Token via EmailJS</title>  
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>  
-  <script>  
-    // Inisialisasi EmailJS dengan Public Key milik Tuan  
-    window.onload = () => {  
-      emailjs.init("SLxbK8YV8CrMxrkPE"); // Ganti dengan public key milik Tuan  
-    };  
-  
-    function generateToken(length = 6) {  
-      return Array.from(crypto.getRandomValues(new Uint8Array(length)))  
-        .map(b => (b % 10).toString()).join('');  
-    }  
-  
-    function getExpireTime(minutes = 15) {  
-      const now = new Date();  
-      now.setMinutes(now.getMinutes() + minutes);  
-      return now.toTimeString().slice(0, 5); // Format HH:MM  
-    }  
-  
-    async function kirimEmail() {  
-      const name = document.getElementById("nama").value.trim();  
-      const email = document.getElementById("email").value.trim();  
-  
-      if (!name || !email) {  
-        alert("Nama dan email wajib diisi.");  
-        return;  
-      }  
-  
-      const token = generateToken();  
-      const expire = getExpireTime();  
-  
-      const params = {  
-        user_name: name,  
-        user_email: email,  
-        verify_code: token,  
-        expire_time: expire  
-      };  
-  
-      emailjs.send("service_vxq85ed", "template_l21v83c", params)  
-        .then((res) => {
-  console.log("Response dari EmailJS:", res);
-  alert(`Token verifikasi berhasil dikirim ke ${email}!\nSilahkan buka Gmail untuk mendapatkan kode verifikasi`);
-})
-.catch(err => {
-  console.error("Gagal mengirim email:", err);
-  alert("Gagal mengirim email:\n" + JSON.stringify(err));
-}); 
-    }  
-  </script>  
-</head>  
-<body style="font-family: sans-serif; padding: 20px;">  
-  <h2>Kirim Token Verifikasi via EmailJS</h2>  
-  <label>Nama:</label><br>  
-  <input id="nama" type="text" placeholder="Nama Anda"><br><br>  
-  
-  <label>Email:</label><br>  
-  <input id="email" type="email" placeholder="email@example.com"><br><br>  
-  
-  <button onclick="kirimEmail()">Kirim Token</button>  
-</body>  
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Registrasi dengan Verifikasi Email</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    emailjs.init("SLxbK8YV8CrMxrkPE"); // Public key Tuan
+
+    const endpoint = "https://script.google.com/macros/s/AKfycbxRgjTbfAXHSjzg8ikp8b9Is3BqJnYeQpmj8xqsEZDZCvH9Gvt--Sofw03coDiTCKLnTw/exec";
+    const encoder = new TextEncoder();
+
+    let token = "";
+    let pendingData = null;
+
+    async function sha512(str) {
+      const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function generateSalt(length = 16) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => chars[b % chars.length]).join('');
+    }
+
+    async function getUTF8Padding(input, length = 32) {
+      const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(input));
+      const bytes = new Uint8Array(buffer);
+      let result = "";
+      for (let i = 0; result.length < length; i += 4) {
+        const idx = i % (bytes.length - 3);
+        const cp = ((bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3]) >>> 0;
+        const codePoint = cp % 0x10FFFF;
+        if (codePoint < 0x20 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) continue;
+        try { result += String.fromCodePoint(codePoint); } catch { continue; }
+      }
+      return result;
+    }
+
+    async function hashPassword(password, salt, iter = 100000) {
+      let base = password + salt + await getUTF8Padding(password);
+      for (let i = 0; i < iter; i++) base = await sha512(base);
+      return base;
+    }
+
+    function generateToken(length = 6) {
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => (b % 10).toString()).join('');
+    }
+
+    async function sendToken() {
+      const name = document.getElementById("reg-name").value.trim();
+      const email = document.getElementById("reg-email").value.trim();
+      const pass = document.getElementById("reg-password").value;
+
+      if (!name || !email || !pass) return alert("Semua kolom harus diisi!");
+
+      const unameHash = await sha512(name.toLowerCase());
+      const salt = generateSalt();
+      const passHash = await hashPassword(pass, salt);
+
+      token = generateToken();
+      pendingData = {
+        username_hash: unameHash,
+        password_hash: passHash,
+        salt: salt,
+        email: email,
+        verified: true,
+        reset_token: ""
+      };
+
+      emailjs.send("service_vxq85ed", "template_l21v83c", {
+        user_name: name,
+        user_email: email,
+        verify_code: token,
+        expire_time: "15 menit"
+      }).then(() => {
+        alert("Token verifikasi dikirim ke email!");
+        document.getElementById("verifikasi").style.display = "block";
+      }).catch(err => {
+        console.error(err);
+        alert("Gagal mengirim email. Cek konfigurasi atau email Anda.");
+      });
+    }
+
+    async function submitVerification() {
+      const kode = document.getElementById("kode-token").value.trim();
+      if (kode !== token) return alert("Kode salah!");
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pendingData)
+      });
+
+      const teks = await res.text();
+      if (teks === "OK") {
+        alert("Registrasi berhasil disimpan ke spreadsheet!");
+        document.getElementById("verifikasi").style.display = "none";
+      } else {
+        alert("Gagal menyimpan data: " + teks);
+      }
+    }
+  </script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>Registrasi</h2>
+  <input id="reg-name" placeholder="Username"><br><br>
+  <input id="reg-password" type="password" placeholder="Password"><br><br>
+  <input id="reg-email" type="email" placeholder="Email"><br><br>
+  <button onclick="sendToken()">Kirim Token ke Email</button>
+
+  <div id="verifikasi" style="display:none; margin-top: 20px;">
+    <h3>Masukkan Token Verifikasi</h3>
+    <input id="kode-token" placeholder="Kode dari email"><br><br>
+    <button onclick="submitVerification()">Verifikasi & Simpan</button>
+  </div>
+</body>
 </html>
