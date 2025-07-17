@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Debug</title>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Registrasi & Login</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
+    // Konfigurasi Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
       authDomain: "tuanauth-5726a.firebaseapp.com",
@@ -46,17 +46,52 @@
       return base;
     }
 
+    function generateSalt(length = 16) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+        .map(b => chars[b % chars.length]).join('');
+    }
+
     function log(msg) {
-      const output = document.getElementById("log");
-      output.textContent += msg + "\n";
+      document.getElementById("log").textContent += msg + "\n";
+    }
+
+    function clearLog() {
+      document.getElementById("log").textContent = "";
+    }
+
+    async function register() {
+      clearLog();
+      const uname = document.getElementById("reg-username").value.trim().toLowerCase();
+      const pass = document.getElementById("reg-password").value;
+      const email = document.getElementById("reg-email").value.trim();
+
+      if (!uname || !pass || !email) return log("Isi semua kolom registrasi.");
+
+      const unameHash = await sha512(uname);
+      const salt = generateSalt();
+      const passHash = await hashPassword(pass, salt);
+
+      const data = {
+        username_hash: unameHash,
+        password_hash: passHash,
+        salt: salt,
+        email: email,
+        verified: true,
+        reset_token: null
+      };
+
+      db.ref("accounts").push(data)
+        .then(() => log("Registrasi berhasil disimpan ke Firebase!"))
+        .catch(err => log("Gagal menyimpan: " + err.message));
     }
 
     async function login() {
-      document.getElementById("log").textContent = "";
+      clearLog();
       const uname = document.getElementById("login-username").value.trim().toLowerCase();
       const pass = document.getElementById("login-password").value;
 
-      if (!uname || !pass) return log("Harap isi username dan password.");
+      if (!uname || !pass) return log("Isi semua kolom login.");
 
       const unameHash = await sha512(uname);
       log("Hash username: " + unameHash);
@@ -66,35 +101,35 @@
         const data = snap.val();
         if (!data) return log("Tidak ada data akun.");
 
-        const akunList = Object.values(data);
-        akunList.forEach(a => log("→ Ditemukan akun hash: " + a.username_hash));
-
-        const akun = akunList.find(a => a.username_hash === unameHash);
+        const akun = Object.values(data).find(a => a.username_hash === unameHash);
         if (!akun) return log("Akun tidak ditemukan.");
 
-        log("Akun ditemukan. Memverifikasi password...");
         const passHash = await hashPassword(pass, akun.salt);
-
         if (passHash === akun.password_hash) {
           log("Login berhasil!");
-          // window.location.href = "/beranda.html"; // Jika ingin redirect
         } else {
           log("Password salah.");
         }
-
       } catch (err) {
-        log("Terjadi kesalahan: " + err.message);
-        console.error(err);
+        log("Error saat login: " + err.message);
       }
     }
   </script>
 </head>
-<body style="font-family: sans-serif; padding: 20px;">
-  <h2>Login</h2>
+<body style="font-family:sans-serif; padding:20px;">
+  <h2>📝 Registrasi</h2>
+  <input id="reg-username" placeholder="Username"><br><br>
+  <input id="reg-password" type="password" placeholder="Password"><br><br>
+  <input id="reg-email" type="email" placeholder="Email"><br><br>
+  <button onclick="register()">Daftar</button>
+
+  <hr style="margin: 30px 0;">
+
+  <h2>🔐 Login</h2>
   <input id="login-username" placeholder="Username"><br><br>
   <input id="login-password" type="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login</button>
+  <button onclick="login()">Masuk</button>
 
-  <pre id="log" style="background:#f0f0f0; padding:10px; margin-top:20px;"></pre>
+  <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
 </body>
 </html>
