@@ -10,16 +10,18 @@
     // Inisialisasi EmailJS
     emailjs.init("SLxbK8YV8CrMxrkPE");
 
-    // Konfigurasi Firebase (Ganti dengan milik Tuan)
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
+  authDomain: "tuanauth-5726a.firebaseapp.com",
+  databaseURL: "https://tuanauth-5726a-default-rtdb.firebaseio.com",
+  projectId: "tuanauth-5726a",
+  storageBucket: "tuanauth-5726a.firebasestorage.app",
+  messagingSenderId: "427538560387",
+  appId: "1:427538560387:web:604b797a8eb65770caf2b6"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
