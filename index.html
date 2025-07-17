@@ -1,19 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-</head>
-<body style="font-family: sans-serif; padding: 20px;">
-  <h2>Login</h2>
-  <input id="login-username" placeholder="Username"><br><br>
-  <input id="login-password" type="password" placeholder="Password"><br><br>
-  <button onclick="login()">Login</button>
-
-  <pre id="log" style="margin-top:20px; background:#eee; padding:10px;"></pre>
-
+  <meta charset="UTF-8" />
+  <title>Debug</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
@@ -24,14 +16,10 @@
       messagingSenderId: "427538560387",
       appId: "1:427538560387:web:604b797a8eb65770caf2b6"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const encoder = new TextEncoder();
 
-    function log(msg) {
-      document.getElementById("log").textContent += msg + "\n";
-    }
+    const encoder = new TextEncoder();
 
     async function sha512(str) {
       const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
@@ -58,34 +46,55 @@
       return base;
     }
 
+    function log(msg) {
+      const output = document.getElementById("log");
+      output.textContent += msg + "\n";
+    }
+
     async function login() {
-      document.getElementById("log").textContent = ""; // clear log
+      document.getElementById("log").textContent = "";
       const uname = document.getElementById("login-username").value.trim().toLowerCase();
       const pass = document.getElementById("login-password").value;
 
-      if (!uname || !pass) return log("Harap isi semua kolom.");
+      if (!uname || !pass) return log("Harap isi username dan password.");
 
       const unameHash = await sha512(uname);
+      log("Hash username: " + unameHash);
 
-      db.ref("accounts").once("value", async (snapshot) => {
-        const data = snapshot.val();
+      try {
+        const snap = await db.ref("accounts").once("value");
+        const data = snap.val();
         if (!data) return log("Tidak ada data akun.");
 
         const akunList = Object.values(data);
-        const akun = akunList.find(u => u.username_hash === unameHash);
+        akunList.forEach(a => log("→ Ditemukan akun hash: " + a.username_hash));
+
+        const akun = akunList.find(a => a.username_hash === unameHash);
         if (!akun) return log("Akun tidak ditemukan.");
 
+        log("Akun ditemukan. Memverifikasi password...");
         const passHash = await hashPassword(pass, akun.salt);
+
         if (passHash === akun.password_hash) {
-          log("✅ Login berhasil!");
-          // Di sini bisa redirect ke halaman utama
+          log("Login berhasil!");
+          // window.location.href = "/beranda.html"; // Jika ingin redirect
         } else {
-          log("❌ Password salah.");
+          log("Password salah.");
         }
-      }, (err) => {
-        log("Gagal mengambil data dari Firebase: " + err.message);
-      });
+
+      } catch (err) {
+        log("Terjadi kesalahan: " + err.message);
+        console.error(err);
+      }
     }
   </script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>Login</h2>
+  <input id="login-username" placeholder="Username"><br><br>
+  <input id="login-password" type="password" placeholder="Password"><br><br>
+  <button onclick="login()">Login</button>
+
+  <pre id="log" style="background:#f0f0f0; padding:10px; margin-top:20px;"></pre>
 </body>
 </html>
