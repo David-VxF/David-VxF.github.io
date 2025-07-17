@@ -4,17 +4,49 @@
   <meta charset="UTF-8">
   <title>Registrasi dengan Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    #log-success, #log-error {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      border-left: 5px solid;
+    }
+    #log-success {
+      background: #e0ffe0;
+      color: #0a4d00;
+      border-color: green;
+    }
+    #log-error {
+      background: #ffe0e0;
+      color: #6e0000;
+      border-color: red;
+    }
+  </style>
   <script>
     emailjs.init("SLxbK8YV8CrMxrkPE"); // Public key EmailJS
 
     const SUPABASE_URL = "https://murndwahrjygdtwqvmgs.supabase.co";
-    const SUPABASE_KEY = "sbp_30270628c2b2b3440ac72afe7518cb093486d6d6";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11cm5kd2Focmp5Z2R0d3F2bWdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2ODA4NDQsImV4cCI6MjA2ODI1Njg0NH0.-8RvrC-JkgnxNbR0iZPJIpPI2pgdFOXGkR2Zk1z91Sc";
     const SUPABASE_TABLE = "accounts";
 
     const encoder = new TextEncoder();
 
     let token = "";
     let pendingData = null;
+
+    function showSuccess(msg) {
+      const el = document.getElementById("log-success");
+      el.innerText = "✅ " + msg;
+      el.style.display = "block";
+      document.getElementById("log-error").style.display = "none";
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("log-error");
+      el.innerText = "❌ " + msg;
+      el.style.display = "block";
+      document.getElementById("log-success").style.display = "none";
+    }
 
     async function sha512(str) {
       const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
@@ -55,39 +87,41 @@
       const email = document.getElementById("reg-email").value.trim();
       const pass = document.getElementById("reg-password").value;
 
-      if (!name || !email || !pass) return alert("Semua kolom harus diisi!");
+      if (!name || !email || !pass) return showError("Semua kolom harus diisi!");
 
-      const unameHash = await sha512(name.toLowerCase());
-      const salt = generateSalt();
-      const passHash = await hashPassword(pass, salt);
+      try {
+        const unameHash = await sha512(name.toLowerCase());
+        const salt = generateSalt();
+        const passHash = await hashPassword(pass, salt);
 
-      token = generateToken();
-      pendingData = {
-        username_hash: unameHash,
-        password_hash: passHash,
-        salt: salt,
-        email: email,
-        verified: true,
-        reset_token: null
-      };
+        token = generateToken();
+        pendingData = {
+          username_hash: unameHash,
+          password_hash: passHash,
+          salt: salt,
+          email: email,
+          verified: true,
+          reset_token: null
+        };
 
-      emailjs.send("service_vxq85ed", "template_l21v83c", {
-        user_name: name,
-        user_email: email,
-        verify_code: token,
-        expire_time: "15 menit"
-      }).then(() => {
-        alert("Token verifikasi dikirim ke email!");
+        await emailjs.send("service_vxq85ed", "template_l21v83c", {
+          user_name: name,
+          user_email: email,
+          verify_code: token,
+          expire_time: "15 menit"
+        });
+
+        showSuccess("Token verifikasi telah dikirim ke email.");
         document.getElementById("verifikasi").style.display = "block";
-      }).catch(err => {
+      } catch (err) {
         console.error(err);
-        alert("Gagal mengirim email. Cek konfigurasi atau email Anda.");
-      });
+        showError("Gagal mengirim email atau hashing: " + (err.message || JSON.stringify(err)));
+      }
     }
 
     async function submitVerification() {
       const kode = document.getElementById("kode-token").value.trim();
-      if (kode !== token) return alert("Kode salah!");
+      if (kode !== token) return showError("Kode verifikasi salah!");
 
       try {
         const res = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
@@ -103,13 +137,13 @@
 
         const result = await res.json();
         if (res.ok) {
-          alert("Registrasi berhasil disimpan ke Supabase!");
+          showSuccess("Registrasi berhasil disimpan ke Supabase.");
           document.getElementById("verifikasi").style.display = "none";
         } else {
-          alert("Gagal menyimpan: " + JSON.stringify(result));
+          showError("Gagal menyimpan: " + JSON.stringify(result));
         }
       } catch (err) {
-        alert("Gagal menghubungi Supabase: " + err.message);
+        showError("Gagal menghubungi Supabase: " + err.message);
       }
     }
   </script>
@@ -126,5 +160,8 @@
     <input id="kode-token" placeholder="Kode dari email"><br><br>
     <button onclick="submitVerification()">Verifikasi & Simpan</button>
   </div>
+
+  <div id="log-success"></div>
+  <div id="log-error"></div>
 </body>
 </html>
