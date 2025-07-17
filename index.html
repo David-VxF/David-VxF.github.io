@@ -2,27 +2,24 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Registrasi dengan Firebase</title>
+  <title>Registrasi via Firebase</title>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
   <script>
-    emailjs.init("SLxbK8YV8CrMxrkPE"); // Public key EmailJS
+    // Inisialisasi EmailJS
+    emailjs.init("SLxbK8YV8CrMxrkPE");
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
-  authDomain: "tuanauth-5726a.firebaseapp.com",
-  databaseURL: "https://tuanauth-5726a-default-rtdb.firebaseio.com",
-  projectId: "tuanauth-5726a",
-  storageBucket: "tuanauth-5726a.firebasestorage.app",
-  messagingSenderId: "427538560387",
-  appId: "1:427538560387:web:604b797a8eb65770caf2b6"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-    
+    // Konfigurasi Firebase (Ganti dengan milik Tuan)
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -77,12 +74,11 @@ const app = initializeApp(firebaseConfig);
 
       token = generateToken();
       pendingData = {
-        username_hash: unameHash,
+        email: email,
         password_hash: passHash,
         salt: salt,
-        email: email,
         verified: true,
-        reset_token: ""
+        reset_token: null
       };
 
       emailjs.send("service_vxq85ed", "template_l21v83c", {
@@ -91,11 +87,11 @@ const app = initializeApp(firebaseConfig);
         verify_code: token,
         expire_time: "15 menit"
       }).then(() => {
-        alert("Token verifikasi dikirim ke email!");
+        alert("Token verifikasi berhasil dikirim ke email!");
         document.getElementById("verifikasi").style.display = "block";
       }).catch(err => {
         console.error(err);
-        alert("Gagal mengirim email. Cek konfigurasi atau email Anda.");
+        alert("Gagal mengirim email. Periksa kembali konfigurasi.");
       });
     }
 
@@ -103,15 +99,17 @@ const app = initializeApp(firebaseConfig);
       const kode = document.getElementById("kode-token").value.trim();
       if (kode !== token) return alert("Kode salah!");
 
-      try {
-        const ref = db.ref("accounts/" + pendingData.username_hash);
-        await ref.set(pendingData);
-        alert("Registrasi berhasil disimpan ke Firebase!");
-        document.getElementById("verifikasi").style.display = "none";
-      } .catch(err => {
-  console.error("EmailJS Error:", err);
-  alert("Gagal mengirim email:\n" + JSON.stringify(err));
-});
+      const usernameHash = await sha512(document.getElementById("reg-name").value.trim().toLowerCase());
+      const ref = db.ref("accounts/" + usernameHash);
+
+      ref.set(pendingData, (error) => {
+        if (error) {
+          alert("Gagal menyimpan ke Firebase: " + error);
+        } else {
+          alert("Akun berhasil disimpan ke Firebase!");
+          document.getElementById("verifikasi").style.display = "none";
+        }
+      });
     }
   </script>
 </head>
