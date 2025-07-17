@@ -108,9 +108,10 @@ const app = initializeApp(firebaseConfig);
         await ref.set(pendingData);
         alert("Registrasi berhasil disimpan ke Firebase!");
         document.getElementById("verifikasi").style.display = "none";
-      } catch (err) {
-        alert("Gagal menyimpan ke Firebase: " + err.message);
-      }
+      } .catch(err => {
+  console.error("EmailJS Error:", err);
+  alert("Gagal mengirim email:\n" + JSON.stringify(err));
+});
     }
   </script>
 </head>
