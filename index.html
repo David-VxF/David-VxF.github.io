@@ -2,14 +2,16 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Registrasi via Firebase</title>
+  <title>Registrasi Akun</title>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  <script>
+  <script type="module">
     // Inisialisasi EmailJS
     emailjs.init("SLxbK8YV8CrMxrkPE");
 
+    // Firebase Config (ganti dengan milik Tuan)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js"
+    
 const firebaseConfig = {
   apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
   authDomain: "tuanauth-5726a.firebaseapp.com",
@@ -22,12 +24,25 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
     const encoder = new TextEncoder();
     let token = "";
     let pendingData = null;
+
+    function showError(msg) {
+      const el = document.getElementById("log-error");
+      el.innerText = "⚠ " + msg;
+      el.style.display = "block";
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("log-success");
+      el.innerText = "✅ " + msg;
+      el.style.display = "block";
+    }
 
     async function sha512(str) {
       const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
@@ -53,7 +68,7 @@ const app = initializeApp(firebaseConfig);
       return result;
     }
 
-    async function hashPassword(password, salt, iter = 100000) {
+    async function hashPassword(password, salt, iter = 50000) {
       let base = password + salt + await getUTF8Padding(password);
       for (let i = 0; i < iter; i++) base = await sha512(base);
       return base;
@@ -68,7 +83,10 @@ const app = initializeApp(firebaseConfig);
       const email = document.getElementById("reg-email").value.trim();
       const pass = document.getElementById("reg-password").value;
 
-      if (!name || !email || !pass) return alert("Semua kolom harus diisi!");
+      document.getElementById("log-error").style.display = "none";
+      document.getElementById("log-success").style.display = "none";
+
+      if (!name || !email || !pass) return showError("Semua kolom wajib diisi.");
 
       const unameHash = await sha512(name.toLowerCase());
       const salt = generateSalt();
@@ -76,9 +94,10 @@ const app = initializeApp(firebaseConfig);
 
       token = generateToken();
       pendingData = {
-        email: email,
+        username_hash: unameHash,
         password_hash: passHash,
         salt: salt,
+        email: email,
         verified: true,
         reset_token: null
       };
@@ -89,43 +108,46 @@ const app = initializeApp(firebaseConfig);
         verify_code: token,
         expire_time: "15 menit"
       }).then(() => {
-        alert("Token verifikasi berhasil dikirim ke email!");
+        showSuccess("Token berhasil dikirim ke email!");
         document.getElementById("verifikasi").style.display = "block";
       }).catch(err => {
+        showError("Gagal kirim email: " + (err.message || JSON.stringify(err)));
         console.error(err);
-        alert("Gagal mengirim email. Periksa kembali konfigurasi.");
       });
     }
 
     async function submitVerification() {
       const kode = document.getElementById("kode-token").value.trim();
-      if (kode !== token) return alert("Kode salah!");
+      if (kode !== token) return showError("Kode verifikasi salah.");
 
-      const usernameHash = await sha512(document.getElementById("reg-name").value.trim().toLowerCase());
-      const ref = db.ref("accounts/" + usernameHash);
-
-      ref.set(pendingData, (error) => {
-        if (error) {
-          alert("Gagal menyimpan ke Firebase: " + error);
-        } else {
-          alert("Akun berhasil disimpan ke Firebase!");
-          document.getElementById("verifikasi").style.display = "none";
-        }
-      });
+      try {
+        const path = "akun/" + pendingData.username_hash;
+        await set(ref(db, path), pendingData);
+        showSuccess("Registrasi berhasil disimpan!");
+        document.getElementById("verifikasi").style.display = "none";
+      } catch (err) {
+        showError("Gagal menyimpan ke Firebase: " + err.message);
+      }
     }
+
+    window.sendToken = sendToken;
+    window.submitVerification = submitVerification;
   </script>
 </head>
-<body style="font-family: sans-serif; padding: 20px;">
-  <h2>Registrasi</h2>
+<body style="font-family: sans-serif; padding: 20px; max-width: 400px;">
+  <h2>Form Registrasi</h2>
   <input id="reg-name" placeholder="Username"><br><br>
   <input id="reg-password" type="password" placeholder="Password"><br><br>
   <input id="reg-email" type="email" placeholder="Email"><br><br>
   <button onclick="sendToken()">Kirim Token ke Email</button>
 
   <div id="verifikasi" style="display:none; margin-top: 20px;">
-    <h3>Masukkan Token Verifikasi</h3>
-    <input id="kode-token" placeholder="Kode dari email"><br><br>
+    <h3>Verifikasi Token</h3>
+    <input id="kode-token" placeholder="Masukkan kode dari email"><br><br>
     <button onclick="submitVerification()">Verifikasi & Simpan</button>
   </div>
+
+  <div id="log-success" style="display:none; background:#e0ffe0; color:#085a08; padding:10px; margin-top:20px; border-left:5px solid green;"></div>
+  <div id="log-error" style="display:none; background:#ffe0e0; color:#800000; padding:10px; margin-top:10px; border-left:5px solid red;"></div>
 </body>
 </html>
