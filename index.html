@@ -151,6 +151,59 @@
         log("Error saat login: " + err.message);
       }
     }
+    let resetToken = "";
+let resetKey = "";
+
+async function kirimResetToken() {
+  clearLog();
+  const uname = document.getElementById("reset-username").value.trim().toLowerCase();
+  const email = document.getElementById("reset-email").value.trim();
+  if (!uname || !email) return log("Isi username dan email.");
+
+  const unameHash = await sha512(uname);
+
+  const snap = await db.ref("accounts").once("value");
+  const data = snap.val();
+  if (!data) return log("Data akun tidak ditemukan.");
+
+  const entry = Object.entries(data).find(([k, v]) => v.username_hash === unameHash && v.email === email);
+  if (!entry) return log("Akun dengan username dan email ini tidak ditemukan.");
+  
+  resetKey = entry[0];
+  resetToken = generateToken();
+
+  emailjs.send("service_vxq85ed", "template_l21v83c", {
+    user_name: uname,
+    user_email: email,
+    verify_code: resetToken,
+    expire_time: "15 menit"
+  }).then(() => {
+    log("Token reset berhasil dikirim!");
+    document.getElementById("reset-verifikasi").style.display = "block";
+  }).catch(err => {
+    log("Gagal kirim email: " + err.message);
+  });
+}
+
+async function verifikasiReset() {
+  const kode = document.getElementById("reset-token").value.trim();
+  const newPass = document.getElementById("reset-new-password").value;
+
+  if (kode !== resetToken) return log("Token tidak cocok.");
+  if (!newPass) return log("Password baru harus diisi.");
+
+  const salt = generateSalt();
+  const newHash = await hashPassword(newPass, salt);
+
+  await db.ref("accounts/" + resetKey).update({
+    password_hash: newHash,
+    salt: salt,
+    reset_token: null
+  });
+
+  log("Password berhasil direset.");
+  document.getElementById("reset-verifikasi").style.display = "none";
+}
   </script>
 </head>
 <body style="font-family:sans-serif; padding:20px;">
@@ -187,6 +240,17 @@
 
 <button onclick="login()">Masuk</button>
 
+  <hr style="margin: 30px 0;">
+<h2>🔁 Lupa Password</h2>
+<input id="reset-username" placeholder="Username"><br><br>
+<input id="reset-email" type="email" placeholder="Email"><br><br>
+<button onclick="kirimResetToken()">Kirim Token Reset</button>
+
+<div id="reset-verifikasi" style="display:none; margin-top: 20px;">
+  <input id="reset-token" placeholder="Token dari email"><br><br>
+  <input id="reset-new-password" type="password" placeholder="Password Baru"><br><br>
+  <button onclick="verifikasiReset()">Reset Password</button>
+</div>
   <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
 </body>
 </html>
