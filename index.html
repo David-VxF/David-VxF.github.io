@@ -251,6 +251,7 @@ async function verifikasiAkun() {
 let resetKey = "";
 
 async function kirimResetToken() {
+async function kirimResetToken() {
   clearLog();
   const uname = document.getElementById("reset-username").value.trim().toLowerCase();
   const email = document.getElementById("reset-email").value.trim();
@@ -267,17 +268,23 @@ async function kirimResetToken() {
   
   resetKey = entry[0];
   resetToken = generateToken();
+  const expiredAt = Date.now() + 3 * 60 * 1000; // 3 menit dari sekarang
+
+  await db.ref("accounts/" + resetKey).update({
+    reset_token: resetToken,
+    reset_expired: expiredAt
+  });
 
   emailjs.send("service_vxq85ed", "template_l21v83c", {
     user_name: uname,
     user_email: email,
     verify_code: resetToken,
-    expire_time: "15 menit"
+    expire_time: "3 menit"
   }).then(() => {
-    log("Token reset berhasil dikirim!");
+    log("✅ Token reset berhasil dikirim!");
     document.getElementById("reset-verifikasi").style.display = "block";
   }).catch(err => {
-    log("Gagal kirim email: " + err.message);
+    log("❌ Gagal kirim email: " + err.message);
   });
 }
 
@@ -285,8 +292,22 @@ async function verifikasiReset() {
   const kode = document.getElementById("reset-token").value.trim();
   const newPass = document.getElementById("reset-new-password").value;
 
-  if (kode !== resetToken) return log("Token tidak cocok.");
-  if (!newPass) return log("Password baru harus diisi.");
+  if (!kode) return log("❗ Masukkan token reset.");
+  if (!newPass) return log("❗ Password baru harus diisi.");
+
+  const snap = await db.ref("accounts/" + resetKey).once("value");
+  const data = snap.val();
+  if (!data) return log("❌ Data akun tidak ditemukan.");
+
+  if (kode !== data.reset_token) return log("❌ Token tidak cocok.");
+
+  if (Date.now() > data.reset_expired) {
+    await db.ref("accounts/" + resetKey).update({
+      reset_token: null,
+      reset_expired: null
+    });
+    return log("❌ Token sudah expired. Silakan reset ulang.");
+  }
 
   const salt = generateSalt();
   const newHash = await hashPassword(newPass, salt);
@@ -294,10 +315,11 @@ async function verifikasiReset() {
   await db.ref("accounts/" + resetKey).update({
     password_hash: newHash,
     salt: salt,
-    reset_token: null
+    reset_token: null,
+    reset_expired: null
   });
 
-  log("Password berhasil direset.");
+  log("✅ Password berhasil direset.");
   document.getElementById("reset-verifikasi").style.display = "none";
 }
   </script>
