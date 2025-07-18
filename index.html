@@ -61,30 +61,53 @@
     }
 
     async function register() {
-      clearLog();
-      const uname = document.getElementById("reg-username").value.trim().toLowerCase();
-      const pass = document.getElementById("reg-password").value;
-      const email = document.getElementById("reg-email").value.trim();
+  clearLog();
+  const uname = document.getElementById("reg-username").value.trim().toLowerCase();
+  const pass = document.getElementById("reg-password").value;
+  const email = document.getElementById("reg-email").value.trim();
 
-      if (!uname || !pass || !email) return log("Isi semua kolom registrasi.");
+  if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
 
-      const unameHash = await sha512(uname);
-      const salt = generateSalt();
-      const passHash = await hashPassword(pass, salt);
+  const unameHash = await sha512(uname);
 
-      const data = {
-        username_hash: unameHash,
-        password_hash: passHash,
-        salt: salt,
-        email: email,
-        verified: true,
-        reset_token: null
-      };
+  // 🔎 Cek duplikat akun
+  try {
+    const snap = await db.ref("accounts").once("value");
+    const accounts = snap.val();
 
-      db.ref("accounts").push(data)
-        .then(() => log("Registrasi berhasil disimpan ke Firebase!"))
-        .catch(err => log("Gagal menyimpan: " + err.message));
+    if (accounts) {
+      for (const key in accounts) {
+        const akun = accounts[key];
+        if (akun.username_hash === unameHash) {
+          return log("❌ Username sudah digunakan!");
+        }
+        if (akun.email.toLowerCase() === email.toLowerCase()) {
+          return log("❌ Email sudah digunakan!");
+        }
+      }
     }
+
+    // Jika tidak ada duplikat, lanjut hash password dan simpan
+    const salt = generateSalt();
+    const passHash = await hashPassword(pass, salt);
+
+    const data = {
+      username_hash: unameHash,
+      password_hash: passHash,
+      salt: salt,
+      email: email,
+      verified: true,
+      reset_token: null
+    };
+
+    db.ref("accounts").push(data)
+      .then(() => log("✅ Registrasi berhasil disimpan ke Firebase!"))
+      .catch(err => log("❌ Gagal menyimpan: " + err.message));
+
+  } catch (err) {
+    log("❌ Gagal mengakses database: " + err.message);
+  }
+}
 
     async function login() {
       clearLog();
