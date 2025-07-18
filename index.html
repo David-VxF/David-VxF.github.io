@@ -74,6 +74,92 @@
       document.getElementById("log").textContent = "";
     }
 
+     let verifyToken = "";
+let verifyKey = "";
+
+function generateToken(length = 6) {
+  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+    .map(b => (b % 10).toString()).join('');
+}
+
+// Tambahkan fungsi ini
+async function kirimTokenRegistrasi() {
+  clearLog();
+  const uname = document.getElementById("reg-username").value.trim().toLowerCase();
+  const pass = document.getElementById("reg-password").value;
+  const email = document.getElementById("reg-email").value.trim();
+
+  if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
+
+  const unameHash = await sha512(uname);
+
+  // Cek duplikat
+  const snap = await db.ref("accounts").once("value");
+  const accounts = snap.val();
+  if (accounts) {
+    for (const key in accounts) {
+      const akun = accounts[key];
+      if (akun.username_hash === unameHash) return log("❌ Username sudah digunakan!");
+      if (akun.email.toLowerCase() === email.toLowerCase()) return log("❌ Email sudah digunakan!");
+    }
+  }
+
+  const salt = generateSalt();
+  const passHash = await hashPassword(pass, salt);
+  verifyToken = generateToken();
+  const expiredAt = Date.now() + 3 * 60 * 1000; // 3 menit dari sekarang
+
+  const data = {
+    username_hash: unameHash,
+    password_hash: passHash,
+    salt: salt,
+    email: email,
+    verified: false,
+    verify_token: verifyToken,
+    token_expired: expiredAt
+  };
+
+  // Simpan data sementara (verified: false)
+  const newRef = db.ref("accounts").push();
+  await newRef.set(data);
+  verifyKey = newRef.key;
+
+  emailjs.send("service_vxq85ed", "template_l21v83c", {
+    user_name: uname,
+    user_email: email,
+    verify_code: verifyToken,
+    expire_time: "3 menit"
+  }).then(() => {
+    log("✅ Token verifikasi dikirim ke email.");
+    document.getElementById("verifikasi").style.display = "block";
+  }).catch(err => {
+    log("❌ Gagal kirim email: " + err.message);
+  });
+}
+
+async function verifikasiAkun() {
+  const kode = document.getElementById("verify-token").value.trim();
+
+  if (kode !== verifyToken) return log("❌ Token salah.");
+  const snap = await db.ref("accounts/" + verifyKey).once("value");
+  const data = snap.val();
+
+  if (!data) return log("❌ Data tidak ditemukan.");
+  if (Date.now() > data.token_expired) {
+    await db.ref("accounts/" + verifyKey).remove();
+    return log("❌ Token sudah expired. Silakan daftar ulang.");
+  }
+
+  await db.ref("accounts/" + verifyKey).update({
+    verified: true,
+    verify_token: null,
+    token_expired: null
+  });
+
+  log("✅ Verifikasi berhasil dan akun disimpan!");
+  document.getElementById("verifikasi").style.display = "none";
+}
+    
     async function register() {
   clearLog();
   const uname = document.getElementById("reg-username").value.trim().toLowerCase();
@@ -222,8 +308,12 @@ async function verifikasiReset() {
 <label>Email:</label><br>
 <input id="reg-email" type="email" placeholder="Email"><br><br>
 
-<button onclick="register()">Daftar</button>
-
+<button onclick="kirimTokenRegistrasi()">Daftar</button>
+<div id="verifikasi" style="display:none; margin-top: 20px;">
+  <h3>Masukkan Token Verifikasi</h3>
+  <input id="verify-token" placeholder="Token dari email"><br><br>
+  <button onclick="verifikasiAkun()">Verifikasi Akun</button>
+</div>
 <hr style="margin: 30px 0;">
 
 <h2>🔐 Login</h2>
