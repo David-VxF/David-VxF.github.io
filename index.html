@@ -300,12 +300,12 @@
       <h2 class="form-title">Login</h2>
       
       <div class="input-group">
-        <input type="text" class="input-field" id="login-username" placeholder="Username" maxlength="20">
+        <input type="text" class="input-field" id="login-username" placeholder="Username" maxlength="20" spellcheck="false">
         <i class="fas fa-user input-icon"></i>
       </div>
       
       <div class="input-group">
-        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="new-password" spellcheck="false" inputmode="none">
+        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="new-password" spellcheck="false">
         <i class="fas fa-eye-slash input-icon" id="loginPasswordToggle"></i>
       </div>
       
@@ -322,17 +322,17 @@
       <h2 class="form-title">Daftar</h2>
       
       <div class="input-group">
-        <input type="text" class="input-field" id="reg-username" placeholder="Username" maxlength="20">
+        <input type="text" class="input-field" id="reg-username" placeholder="Username" maxlength="20" spellcheck="false">
         <i class="fas fa-user input-icon"></i>
       </div>
       
       <div class="input-group">
-        <input type="email" class="input-field" id="reg-email" placeholder="Email">
+        <input type="email" inputmode="email" class="input-field" id="reg-email" placeholder="Email" spellcheck="false">
         <i class="fas fa-envelope input-icon"></i>
       </div>
       
       <div class="input-group">
-        <input type="password" class="input-field" id="reg-password" placeholder="Password" maxlength="128">
+        <input type="password" class="input-field" id="reg-password" placeholder="Password" maxlength="128" autocomplete="new-password" spellcheck="false">
         <i class="fas fa-eye-slash input-icon" id="regPasswordToggle"></i>
       </div>
       
@@ -341,7 +341,7 @@
       <div class="verification-section" id="regVerification">
         <div class="verification-title">Masukkan kode verifikasi dari email</div>
         <div class="input-group">
-          <input type="text" class="input-field" id="verify-token" placeholder="Kode Verifikasi" maxlength="6">
+          <input inputmode="numeric" type="text" class="input-field" id="verify-token" placeholder="Kode Verifikasi" maxlength="6" spellcheck="false">
           <i class="fas fa-key input-icon"></i>
         </div>
         <button class="auth-btn" onclick="verifikasiAkun()">Verifikasi</button>
@@ -358,12 +358,12 @@
       <h2 class="form-title">Reset Password</h2>
       
       <div class="input-group">
-        <input type="text" class="input-field" id="reset-username" placeholder="Username" maxlength="20">
+        <input type="text" class="input-field" id="reset-username" placeholder="Username" maxlength="20" spellcheck="false">
         <i class="fas fa-user input-icon"></i>
       </div>
       
       <div class="input-group">
-        <input type="email" class="input-field" id="reset-email" placeholder="Email">
+        <input type="email" class="input-field" id="reset-email" placeholder="Email" inputmode="email" spellcheck="false">
         <i class="fas fa-envelope input-icon"></i>
       </div>
       
@@ -372,11 +372,11 @@
       <div class="verification-section" id="resetVerification">
         <div class="verification-title">Masukkan kode dan password baru</div>
         <div class="input-group">
-          <input type="text" class="input-field" id="reset-token" placeholder="Kode dari Email" maxlength="6">
+          <input inputmode="numeric" type="text" class="input-field" id="reset-token" placeholder="Kode dari Email" maxlength="6">
           <i class="fas fa-key input-icon"></i>
         </div>
         <div class="input-group">
-          <input type="password" class="input-field" id="reset-new-password" placeholder="Password Baru" maxlength="128">
+          <input type="password" class="input-field" id="reset-new-password" placeholder="Password Baru" maxlength="128" autocomplete="new-password" spellcheck="false">
           <i class="fas fa-eye-slash input-icon" id="resetPasswordToggle"></i>
         </div>
         <button class="auth-btn" onclick="verifikasiReset()">Reset Password</button>
