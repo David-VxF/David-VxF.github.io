@@ -314,9 +314,28 @@ async function verifikasiReset() {
   <h2>📝 Registrasi</h2>
 
 <label>Username (maks. 20):</label><br>
-<input id="reg-username" placeholder="Username" 
-       oninput="handleInputLimit(this, 20, 'username-kuota')"><br>
-<small id="username-kuota">0 / 20</small><br><br>
+<div style="position: relative; display: inline-block; width: 100%;">
+  <input id="login-username" placeholder="Username" maxlength="20"
+         style="padding-right: 40px; width: 100%;" />
+  <span id="username-char-count" style="
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: gray;
+    pointer-events: none;
+  ">0/20</span>
+</div>
+
+<script>
+  const usernameInput = document.getElementById('login-username');
+  const usernameCounter = document.getElementById('username-char-count');
+
+  usernameInput.addEventListener('input', () => {
+    usernameCounter.textContent = `${usernameInput.value.length}/20`;
+  });
+</script><br><br>
 
 <label>Password (maks. 128):</label><br>
 <input id="reg-password" type="password" placeholder="Password"
