@@ -314,33 +314,10 @@ async function verifikasiReset() {
   <h2>📝 Registrasi</h2>
 
 <label>Username (maks. 20):</label><br>
-<div style="position: relative; display: inline-block; width: 200px;">
-  <input id="login-username" placeholder="Username" maxlength="20"
-         style="padding-right: 40px; width: 100%;" />
-  <span id="username-char-count" style="
-    position: relative;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: gray;
-    pointer-events: none;
-  ">0/20</span>
-</div>
-
-<script>
-  const usernameInput = document.getElementById('login-username');
-  const usernameCounter = document.getElementById('username-char-count');
-
-  usernameInput.addEventListener('input', () => {
-    usernameCounter.textContent = `${usernameInput.value.length}/20`;
-  });
-</script><br><br>
+  <input id="login-username" placeholder="Username" maxlength="20"><br><br>
 
 <label>Password (maks. 128):</label><br>
-<input id="reg-password" type="password" placeholder="Password"
-       oninput="handleInputLimit(this, 128, 'password-kuota')"><br>
-<small id="password-kuota">0 / 128</small><br><br>
+<input maxlength="128" id="reg-password" type="password" placeholder="Password"><br><br>
 
 <label>Email:</label><br>
 <input id="reg-email" type="email" placeholder="Email"><br><br>
@@ -348,7 +325,7 @@ async function verifikasiReset() {
 <button onclick="kirimTokenRegistrasi()">Daftar</button>
 <div id="verifikasi" style="display:none; margin-top: 20px;">
   <h3>Masukkan Token Verifikasi</h3>
-  <input id="verify-token" placeholder="Token dari email"><br><br>
+  <input maxlength="6" id="verify-token" placeholder="Token dari email"><br><br>
   <button onclick="verifikasiAkun()">Verifikasi Akun</button>
 </div>
 <hr style="margin: 30px 0;">
@@ -356,14 +333,10 @@ async function verifikasiReset() {
 <h2>🔐 Login</h2>
 
 <label>Username:</label><br>
-<input id="login-username" placeholder="Username"
-       oninput="handleInputLimit(this, 20, 'login-username-kuota')"><br>
-<small id="login-username-kuota">0 / 20</small><br><br>
+<input maxlength="20" id="login-username" placeholder="Username"><br><br>
 
 <label>Password:</label><br>
-<input id="login-password" type="password" placeholder="Password"
-       oninput="handleInputLimit(this, 128, 'login-password-kuota')"><br>
-<small id="login-password-kuota">0 / 128</small><br><br>
+<input maxlength="128" id="login-password" type="password" placeholder="Password"><br><br>
 
 <button onclick="login()">Masuk</button>
 
@@ -374,29 +347,8 @@ async function verifikasiReset() {
 <button onclick="kirimResetToken()">Kirim Token Reset</button>
 
 <div id="reset-verifikasi" style="display:none; margin-top: 20px;">
-  <input id="reset-token" placeholder="Token dari email"><br><br>
-  <div style="position: relative; display: inline-block; width: 100%;">
-  <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"
-         style="padding-right: 50px; width: 100%;" />
-  <span id="char-count" style="
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: gray;
-    pointer-events: none;
-  ">0/128</span>
-</div>
-
-<script>
-  const input = document.getElementById('reset-new-password');
-  const counter = document.getElementById('char-count');
-
-  input.addEventListener('input', () => {
-    counter.textContent = `${input.value.length}/128`;
-  });
-</script><br><br>
+  <input maxlength="6" id="reset-token" placeholder="Token dari email"><br><br>
+  <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"><br><br>
   <button onclick="verifikasiReset()">Reset Password</button>
 </div>
   <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
