@@ -393,11 +393,20 @@
   <div id="infoPopup" class="info-popup"></div>
 
   <script>
-    const input = document.getElementById('login-username', 'reg-username');
-input.addEventListener('input', () => {
-  if (input.value.length > 20) {
-    input.value = input.value.slice(0, 20);
-  }
+    document.querySelectorAll('#login-username, #reg-username, #reset-username').forEach(input => {
+  input.addEventListener('input', () => {
+    if (input.value.length > 20) {
+      input.value = input.value.slice(0, 20);
+    }
+  });
+});
+    document.querySelectorAll('#reset-new-password, #reg-password, #login-password').forEach(input => {
+  const max = parseInt(input.getAttribute('maxlength')) || 128;
+  input.addEventListener('input', () => {
+    if (input.value.length > max) {
+      input.value = input.value.slice(0, max);
+    }
+  });
 });
     const PROXY_URL = "https://dog-technician-elect-intended.trycloudflare.com";
     
