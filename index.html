@@ -322,6 +322,21 @@ async function verifikasiReset() {
   log("✅ Password berhasil direset.");
   document.getElementById("reset-verifikasi").style.display = "none";
 }
+  window.onload = () => {
+  const fields = [
+    { id: "reg-username", max: 20, label: "username-kuota" },
+    { id: "reg-password", max: 128, label: "password-kuota" },
+    { id: "login-username", max: 20, label: "login-username-kuota" },
+    { id: "login-password", max: 128, label: "login-password-kuota" }
+  ];
+
+  fields.forEach(({ id, max, label }) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => handleInputLimit(el, max, label));
+    }
+  });
+};
   </script>
 </head>
 <body style="font-family:sans-serif; padding:20px;">
@@ -364,13 +379,13 @@ async function verifikasiReset() {
 
   <hr style="margin: 30px 0;">
 <h2>🔁 Lupa Password</h2>
-<input id="reset-username" placeholder="Username"><br><br>
+<input id="reset-username" placeholder="Username" maxlength="20"><br><br>
 <input id="reset-email" type="email" placeholder="Email"><br><br>
 <button onclick="kirimResetToken()">Kirim Token Reset</button>
 
 <div id="reset-verifikasi" style="display:none; margin-top: 20px;">
   <input id="reset-token" placeholder="Token dari email"><br><br>
-  <input id="reset-new-password" type="password" placeholder="Password Baru"><br><br>
+  <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"><br><br>
   <button onclick="verifikasiReset()">Reset Password</button>
 </div>
   <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
