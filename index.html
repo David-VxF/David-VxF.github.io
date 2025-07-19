@@ -88,15 +88,23 @@
 
       await fetch(PROXY_URL + "/firebase/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: pushKey, data})});
 
-      await fetch(PROXY_URL + "/emailjs", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({user_name: uname, user_email: email, verify_code: verifyToken, expire_time: "3 menit"})
-      });
-
-      log("✅ Token verifikasi dikirim ke email.");
-      document.getElementById("verifikasi").style.display = "block";
-    }
+      const emailRes = await fetch(PROXY_URL + "/emailjs", {
+  method: "POST",
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({
+    user_name: uname,
+    user_email: email,
+    verify_code: verifyToken,
+    expire_time: "3 menit"
+  })
+});
+const emailData = await emailRes.json();
+if (emailData.success) {
+  log("✅ Token verifikasi dikirim ke email.");
+  document.getElementById("verifikasi").style.display = "block";
+} else {
+  log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
+}
 
     async function verifikasiAkun() {
       const kode = document.getElementById("verify-token").value.trim();
@@ -151,15 +159,23 @@
         body: JSON.stringify({path: "accounts/" + resetKey, data: {reset_token: resetToken, reset_expired: expiredAt}})
       });
 
-      await fetch(PROXY_URL + "/emailjs", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({user_name: uname, user_email: email, verify_code: resetToken, expire_time: "3 menit"})
-      });
-
-      log("✅ Token reset dikirim!");
-      document.getElementById("reset-verifikasi").style.display = "block";
-    }
+      const emailRes = await fetch(PROXY_URL + "/emailjs", {
+  method: "POST",
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({
+    user_name: uname,
+    user_email: email,
+    verify_code: verifyToken,
+    expire_time: "3 menit"
+  })
+});
+const emailData = await emailRes.json();
+if (emailData.success) {
+  log("✅ Token verifikasi dikirim ke email.");
+  document.getElementById("verifikasi").style.display = "block";
+} else {
+  log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
+}
 
     async function verifikasiReset() {
       const kode = document.getElementById("reset-token").value.trim();
