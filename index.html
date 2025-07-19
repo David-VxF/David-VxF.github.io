@@ -1,231 +1,664 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Proxy Auth System</title>
-  <script>
-    const PROXY_URL = "https://dog-technician-elect-intended.trycloudflare.com"; // Ganti dengan domain Cloudflare Tunnel kamu
-  </script>
-  <script>
-    // Hashing dan padding tools
-    const encoder = new TextEncoder();
-
-    async function sha512(str) {
-      const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function getUTF8Padding(input, length = 32) {
-      const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(input));
-      const bytes = new Uint8Array(buffer);
-      let result = "";
-      for (let i = 0; result.length < length; i += 4) {
-        const idx = i % (bytes.length - 3);
-        const cp = ((bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3]) >>> 0;
-        const codePoint = cp % 0x10FFFF;
-        if (codePoint < 0x20 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) continue;
-        try { result += String.fromCodePoint(codePoint); } catch { continue; }
-      }
-      return result;
-    }
-
-    async function hashPassword(password, salt, iter = 100000) {
-      let base = password + salt + await getUTF8Padding(password);
-      for (let i = 0; i < iter; i++) base = await sha512(base);
-      return base;
-    }
-
-    function generateSalt(length = 16) {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => chars[b % chars.length]).join('');
-    }
-
-    function generateToken(length = 6) {
-      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => (b % 10).toString()).join('');
-    }
-
-    function log(msg) {
-      document.getElementById("log").textContent += msg + "\n";
-    }
-
-    function clearLog() {
-      document.getElementById("log").textContent = "";
-    }
-
-    // === PROXY-FRIENDLY LOGIC ===
-    let verifyToken = "";
-    let verifyKey = "";
-    let resetToken = "";
-    let resetKey = "";
-
-    async function kirimTokenRegistrasi() {
-      clearLog();
-      const uname = document.getElementById("reg-username").value.trim().toLowerCase();
-      const pass = document.getElementById("reg-password").value;
-      const email = document.getElementById("reg-email").value.trim();
-      if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
-
-      const unameHash = await sha512(uname);
-      const accSnap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
-      const accounts = await accSnap.json();
-
-      if (accounts) {
-        for (const key in accounts) {
-          const akun = accounts[key];
-          if (akun.username_hash === unameHash) return log("❌ Username sudah digunakan!");
-          if (akun.email.toLowerCase() === email.toLowerCase()) return log("❌ Email sudah digunakan!");
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glassmorphism Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      }
 
-      const salt = generateSalt();
-      const passHash = await hashPassword(pass, salt);
-      verifyToken = generateToken();
-      const expiredAt = Date.now() + 3 * 60 * 1000;
-      const data = {username_hash: unameHash, password_hash: passHash, salt, email, verified: false, verify_token: verifyToken, token_expired: expiredAt};
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-      const pushKey = "accounts/" + crypto.randomUUID();
-      verifyKey = pushKey.split("/")[1];
+        /* Animated background stars */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
 
-      await fetch(PROXY_URL + "/firebase/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: pushKey, data})});
+        .star {
+            position: absolute;
+            background: white;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: twinkle 3s ease-in-out infinite alternate;
+        }
 
-      const emailRes = await fetch(PROXY_URL + "/emailjs", {
-  method: "POST",
-  headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({
-    user_name: uname,
-    user_email: email,
-    verify_code: verifyToken,
-    expire_time: "3 menit"
-  })
-});
-const emailData = await emailRes.json();
-if (emailData.success) {
-  log("✅ Token verifikasi dikirim ke email.");
-  document.getElementById("verifikasi").style.display = "block";
-} else {
-  log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
-}
-}
-    async function verifikasiAkun() {
-      const kode = document.getElementById("verify-token").value.trim();
-      if (kode !== verifyToken) return log("❌ Token salah.");
-      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
-      const data = await snap.json();
-      if (!data) return log("❌ Data tidak ditemukan.");
-      if (Date.now() > data.token_expired) {
-        await fetch(PROXY_URL + "/firebase/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
-        return log("❌ Token expired.");
-      }
-      await fetch(PROXY_URL + "/firebase/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey, data: {verified: true, verify_token: null, token_expired: null}})});
-      log("✅ Verifikasi berhasil!");
-      document.getElementById("verifikasi").style.display = "none";
-    }
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
 
-    async function login() {
-      clearLog();
-      const uname = document.getElementById("login-username").value.trim().toLowerCase();
-      const pass = document.getElementById("login-password").value;
-      if (!uname || !pass) return log("❗ Isi semua kolom.");
+        /* Mountains silhouette */
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background: linear-gradient(to top, rgba(76, 56, 132, 0.8), rgba(76, 56, 132, 0.4));
+            clip-path: polygon(0% 100%, 0% 70%, 15% 45%, 25% 60%, 35% 40%, 45% 55%, 60% 35%, 70% 50%, 85% 30%, 100% 45%, 100% 100%);
+        }
 
-      const unameHash = await sha512(uname);
-      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
-      const data = await snap.json();
-      const akun = Object.values(data || {}).find(a => a.username_hash === unameHash);
-      if (!akun) return log("❌ Akun tidak ditemukan.");
+        .trees {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 25%;
+            background: linear-gradient(to top, rgba(45, 35, 85, 0.9), rgba(45, 35, 85, 0.6));
+            clip-path: polygon(0% 100%, 0% 80%, 8% 70%, 12% 80%, 18% 65%, 22% 80%, 28% 60%, 35% 80%, 42% 55%, 48% 80%, 55% 50%, 62% 80%, 68% 45%, 75% 80%, 82% 40%, 88% 80%, 92% 60%, 96% 80%, 100% 70%, 100% 100%);
+        }
 
-      const passHash = await hashPassword(pass, akun.salt);
-      if (passHash === akun.password_hash) log("✅ Login berhasil!");
-      else log("❌ Password salah.");
-    }
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
 
-    async function kirimResetToken() {
-      clearLog();
-      const uname = document.getElementById("reset-username").value.trim().toLowerCase();
-      const email = document.getElementById("reset-email").value.trim();
-      const unameHash = await sha512(uname);
+        /* Glassmorphism card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            animation: slideUp 0.8s ease-out;
+        }
 
-      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
-      const data = await snap.json();
-      const entry = Object.entries(data || {}).find(([k, v]) => v.username_hash === unameHash && v.email === email);
-      if (!entry) return log("❌ Akun tidak ditemukan.");
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-      resetKey = entry[0];
-      resetToken = generateToken();
-      const expiredAt = Date.now() + 3 * 60 * 1000;
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+        }
 
-      await fetch(PROXY_URL + "/firebase/update", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({path: "accounts/" + resetKey, data: {reset_token: resetToken, reset_expired: expiredAt}})
-      });
+        /* Tab system */
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 5px;
+        }
 
-      const emailRes = await fetch(PROXY_URL + "/emailjs", {
-  method: "POST",
-  headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({
-    user_name: uname,
-    user_email: email,
-    verify_code: resetToken,
-    expire_time: "3 menit"
-  })
-});
-const emailData = await emailRes.json();
-if (emailData.success) {
-  log("✅ Token verifikasi dikirim ke email.");
-  document.getElementById("verifikasi").style.display = "block";
-} else {
-  log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
-}
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
 
-    async function verifikasiReset() {
-      const kode = document.getElementById("reset-token").value.trim();
-      const newPass = document.getElementById("reset-new-password").value;
-      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + resetKey})});
-      const data = await snap.json();
-      if (kode !== data.reset_token) return log("❌ Token salah.");
-      if (Date.now() > data.reset_expired) return log("❌ Token expired.");
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.02);
+        }
 
-      const salt = generateSalt();
-      const passHash = await hashPassword(newPass, salt);
-      await fetch(PROXY_URL + "/firebase/update", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({path: "accounts/" + resetKey, data: {password_hash: passHash, salt: salt, reset_token: null, reset_expired: null}})
-      });
+        /* Form sections */
+        .form-section {
+            display: none;
+        }
 
-      log("✅ Password berhasil direset.");
-      document.getElementById("reset-verifikasi").style.display = "none";
-    }
-   }
-  </script>
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Form styling */
+        h2 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2));
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .forgot-password a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password a:hover {
+            color: white;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .register-link a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Verification section */
+        .verification-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .verification-section.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Log section */
+        .log-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        #log {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .glass-card {
+                padding: 30px 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
-<body style="font-family:sans-serif; padding:20px">
-  <h2>📝 Registrasi</h2>
-  <input maxlength="20" id="reg-username" placeholder="Username"><br>
-  <input maxlength="128" id="reg-password" placeholder="Password" type="password"><br>
-  <input id="reg-email" placeholder="Email"><br>
-  <button onclick="kirimTokenRegistrasi()">Daftar</button>
-  <div id="verifikasi" style="display:none">
-    <input maxlength="6" id="verify-token" placeholder="Token verifikasi"><br>
-    <button onclick="verifikasiAkun()">Verifikasi</button>
-  </div>
-  <hr>
+<body>
+    <!-- Animated background -->
+    <div class="stars"></div>
+    <div class="mountains"></div>
+    <div class="trees"></div>
 
-  <h2>🔐 Login</h2>
-  <input maxlength="20" id="login-username" placeholder="Username"><br>
-  <input maxlength="128" id="login-password" type="password" placeholder="Password"><br>
-  <button onclick="login()">Login</button>
-  <hr>
+    <div class="container">
+        <div class="glass-card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('login')">Login</div>
+                <div class="tab" onclick="switchTab('register')">Register</div>
+                <div class="tab" onclick="switchTab('reset')">Reset</div>
+            </div>
 
-  <h2>🔁 Reset Password</h2>
-  <input maxlength="20" id="reset-username" placeholder="Username"><br>
-  <input id="reset-email" placeholder="Email"><br>
-  <button onclick="kirimResetToken()">Kirim Token</button>
-  <div id="reset-verifikasi" style="display:none">
-    <input maxlength="6" id="reset-token" placeholder="Token dari email"><br>
-    <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"><br>
-    <button onclick="verifikasiReset()">Reset Password</button>
-  </div>
-  <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
+            <!-- Login Section -->
+            <div id="login-section" class="form-section active">
+                <h2>Login</h2>
+                <div class="input-group">
+                    <input type="text" id="login-username" placeholder="Username" maxlength="20">
+                    <div class="input-icon">👤</div>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Password" maxlength="128">
+                    <div class="input-icon">🔒</div>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember-me">
+                    <label for="remember-me">Remember me</label>
+                </div>
+                <button onclick="login()">Login</button>
+                <div class="forgot-password">
+                    <a href="#" onclick="switchTab('reset')">Forgot password?</a>
+                </div>
+                <div class="register-link">
+                    Don't have an account? <a href="#" onclick="switchTab('register')">Register</a>
+                </div>
+            </div>
+
+            <!-- Register Section -->
+            <div id="register-section" class="form-section">
+                <h2>Register</h2>
+                <div class="input-group">
+                    <input type="text" id="reg-username" placeholder="Username" maxlength="20">
+                    <div class="input-icon">👤</div>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="reg-email" placeholder="Email">
+                    <div class="input-icon">📧</div>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="reg-password" placeholder="Password" maxlength="128">
+                    <div class="input-icon">🔒</div>
+                </div>
+                <button onclick="kirimTokenRegistrasi()">Register</button>
+                
+                <div id="verifikasi" class="verification-section">
+                    <h3 style="color: white; margin-bottom: 15px; font-size: 18px;">Verification</h3>
+                    <div class="input-group">
+                        <input type="text" id="verify-token" placeholder="Verification Code" maxlength="6">
+                        <div class="input-icon">🔑</div>
+                    </div>
+                    <button onclick="verifikasiAkun()">Verify Account</button>
+                </div>
+            </div>
+
+            <!-- Reset Password Section -->
+            <div id="reset-section" class="form-section">
+                <h2>Reset Password</h2>
+                <div class="input-group">
+                    <input type="text" id="reset-username" placeholder="Username" maxlength="20">
+                    <div class="input-icon">👤</div>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="reset-email" placeholder="Email">
+                    <div class="input-icon">📧</div>
+                </div>
+                <button onclick="kirimResetToken()">Send Reset Token</button>
+                
+                <div id="reset-verifikasi" class="verification-section">
+                    <h3 style="color: white; margin-bottom: 15px; font-size: 18px;">Reset Verification</h3>
+                    <div class="input-group">
+                        <input type="text" id="reset-token" placeholder="Reset Token" maxlength="6">
+                        <div class="input-icon">🔑</div>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="reset-new-password" placeholder="New Password" maxlength="128">
+                        <div class="input-icon">🔒</div>
+                    </div>
+                    <button onclick="verifikasiReset()">Reset Password</button>
+                </div>
+            </div>
+
+            <!-- Log Section -->
+            <div class="log-section">
+                <pre id="log"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create animated stars
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = (Math.random() * 3 + 1) + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(tabName + '-section').classList.add('active');
+            
+            clearLog();
+        }
+
+        // Initialize
+        createStars();
+
+        // Proxy URL configuration
+        const PROXY_URL = "https://dog-technician-elect-intended.trycloudflare.com";
+
+        // Original authentication functions
+        const encoder = new TextEncoder();
+
+        async function sha512(str) {
+            const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function getUTF8Padding(input, length = 32) {
+            const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(input));
+            const bytes = new Uint8Array(buffer);
+            let result = "";
+            for (let i = 0; result.length < length; i += 4) {
+                const idx = i % (bytes.length - 3);
+                const cp = ((bytes[idx] << 24) | (bytes[idx + 1] << 16) | (bytes[idx + 2] << 8) | bytes[idx + 3]) >>> 0;
+                const codePoint = cp % 0x10FFFF;
+                if (codePoint < 0x20 || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) continue;
+                try { result += String.fromCodePoint(codePoint); } catch { continue; }
+            }
+            return result;
+        }
+
+        async function hashPassword(password, salt, iter = 100000) {
+            let base = password + salt + await getUTF8Padding(password);
+            for (let i = 0; i < iter; i++) base = await sha512(base);
+            return base;
+        }
+
+        function generateSalt(length = 16) {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => chars[b % chars.length]).join('');
+        }
+
+        function generateToken(length = 6) {
+            return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => (b % 10).toString()).join('');
+        }
+
+        function log(msg) {
+            document.getElementById("log").textContent += msg + "\n";
+        }
+
+        function clearLog() {
+            document.getElementById("log").textContent = "";
+        }
+
+        let verifyToken = "";
+        let verifyKey = "";
+        let resetToken = "";
+        let resetKey = "";
+
+        async function kirimTokenRegistrasi() {
+            clearLog();
+            const uname = document.getElementById("reg-username").value.trim().toLowerCase();
+            const pass = document.getElementById("reg-password").value;
+            const email = document.getElementById("reg-email").value.trim();
+            if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
+
+            const unameHash = await sha512(uname);
+            const accSnap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+            const accounts = await accSnap.json();
+
+            if (accounts) {
+                for (const key in accounts) {
+                    const akun = accounts[key];
+                    if (akun.username_hash === unameHash) return log("❌ Username sudah digunakan!");
+                    if (akun.email.toLowerCase() === email.toLowerCase()) return log("❌ Email sudah digunakan!");
+                }
+            }
+
+            const salt = generateSalt();
+            const passHash = await hashPassword(pass, salt);
+            verifyToken = generateToken();
+            const expiredAt = Date.now() + 3 * 60 * 1000;
+            const data = {username_hash: unameHash, password_hash: passHash, salt, email, verified: false, verify_token: verifyToken, token_expired: expiredAt};
+
+            const pushKey = "accounts/" + crypto.randomUUID();
+            verifyKey = pushKey.split("/")[1];
+
+            await fetch(PROXY_URL + "/firebase/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: pushKey, data})});
+
+            const emailRes = await fetch(PROXY_URL + "/emailjs", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    user_name: uname,
+                    user_email: email,
+                    verify_code: verifyToken,
+                    expire_time: "3 menit"
+                })
+            });
+            const emailData = await emailRes.json();
+            if (emailData.success) {
+                log("✅ Token verifikasi dikirim ke email.");
+                document.getElementById("verifikasi").classList.add("show");
+            } else {
+                log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
+            }
+        }
+
+        async function verifikasiAkun() {
+            const kode = document.getElementById("verify-token").value.trim();
+            if (kode !== verifyToken) return log("❌ Token salah.");
+            const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
+            const data = await snap.json();
+            if (!data) return log("❌ Data tidak ditemukan.");
+            if (Date.now() > data.token_expired) {
+                await fetch(PROXY_URL + "/firebase/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
+                return log("❌ Token expired.");
+            }
+            await fetch(PROXY_URL + "/firebase/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey, data: {verified: true, verify_token: null, token_expired: null}})});
+            log("✅ Verifikasi berhasil!");
+            document.getElementById("verifikasi").classList.remove("show");
+        }
+
+        async function login() {
+            clearLog();
+            const uname = document.getElementById("login-username").value.trim().toLowerCase();
+            const pass = document.getElementById("login-password").value;
+            if (!uname || !pass) return log("❗ Isi semua kolom.");
+
+            const unameHash = await sha512(uname);
+            const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+            const data = await snap.json();
+            const akun = Object.values(data || {}).find(a => a.username_hash === unameHash);
+            if (!akun) return log("❌ Akun tidak ditemukan.");
+
+            const passHash = await hashPassword(pass, akun.salt);
+            if (passHash === akun.password_hash) log("✅ Login berhasil!");
+            else log("❌ Password salah.");
+        }
+
+        async function kirimResetToken() {
+            clearLog();
+            const uname = document.getElementById("reset-username").value.trim().toLowerCase();
+            const email = document.getElementById("reset-email").value.trim();
+            const unameHash = await sha512(uname);
+
+            const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+            const data = await snap.json();
+            const entry = Object.entries(data || {}).find(([k, v]) => v.username_hash === unameHash && v.email === email);
+            if (!entry) return log("❌ Akun tidak ditemukan.");
+
+            resetKey = entry[0];
+            resetToken = generateToken();
+            const expiredAt = Date.now() + 3 * 60 * 1000;
+
+            await fetch(PROXY_URL + "/firebase/update", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({path: "accounts/" + resetKey, data: {reset_token: resetToken, reset_expired: expiredAt}})
+            });
+
+            const emailRes = await fetch(PROXY_URL + "/emailjs", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    user_name: uname,
+                    user_email: email,
+                    verify_code: resetToken,
+                    expire_time: "3 menit"
+                })
+            });
+            const emailData = await emailRes.json();
+            if (emailData.success) {
+                log("✅ Token reset dikirim ke email.");
+                document.getElementById("reset-verifikasi").classList.add("show");
+            } else {
+                log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
+            }
+        }
+
+        async function verifikasiReset() {
+            const kode = document.getElementById("reset-token").value.trim();
+            const newPass = document.getElementById("reset-new-password").value;
+            const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + resetKey})});
+            const data = await snap.json();
+            if (kode !== data.reset_token) return log("❌ Token salah.");
+            if (Date.now() > data.reset_expired) return log("❌ Token expired.");
+
+            const salt = generateSalt();
+            const passHash = await hashPassword(newPass, salt);
+            await fetch(PROXY_URL + "/firebase/update", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({path: "accounts/" + resetKey, data: {password_hash: passHash, salt: salt, reset_token: null, reset_expired: null}})
+            });
+
+            log("✅ Password berhasil direset.");
+            document.getElementById("reset-verifikasi").classList.remove("show");
+        }
+    </script>
 </body>
 </html>
