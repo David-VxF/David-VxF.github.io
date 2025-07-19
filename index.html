@@ -2,30 +2,19 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Debug</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <title>Proxy Auth System</title>
   <script>
-    // Konfigurasi Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyB5WlRtD_m5OAm-DP-qxK99TGERhtMedL0",
-      authDomain: "tuanauth-5726a.firebaseapp.com",
-      databaseURL: "https://tuanauth-5726a-default-rtdb.firebaseio.com",
-      projectId: "tuanauth-5726a",
-      storageBucket: "tuanauth-5726a.appspot.com",
-      messagingSenderId: "427538560387",
-      appId: "1:427538560387:web:604b797a8eb65770caf2b6"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
+    const PROXY_URL = "https://encouraged-supervisor-drives-remind.trycloudflare.com"; // Ganti dengan domain Cloudflare Tunnel kamu
+  </script>
+  <script>
+    // Hashing dan padding tools
     const encoder = new TextEncoder();
 
     async function sha512(str) {
       const buf = await crypto.subtle.digest("SHA-512", encoder.encode(str));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
-    
+
     async function getUTF8Padding(input, length = 32) {
       const buffer = await crypto.subtle.digest("SHA-512", encoder.encode(input));
       const bytes = new Uint8Array(buffer);
@@ -48,8 +37,11 @@
 
     function generateSalt(length = 16) {
       const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-        .map(b => chars[b % chars.length]).join('');
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => chars[b % chars.length]).join('');
+    }
+
+    function generateToken(length = 6) {
+      return Array.from(crypto.getRandomValues(new Uint8Array(length))).map(b => (b % 10).toString()).join('');
     }
 
     function log(msg) {
@@ -60,301 +52,163 @@
       document.getElementById("log").textContent = "";
     }
 
-     let verifyToken = "";
-let verifyKey = "";
+    // === PROXY-FRIENDLY LOGIC ===
+    let verifyToken = "";
+    let verifyKey = "";
+    let resetToken = "";
+    let resetKey = "";
 
-function generateToken(length = 6) {
-  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-    .map(b => (b % 10).toString()).join('');
-}
+    async function kirimTokenRegistrasi() {
+      clearLog();
+      const uname = document.getElementById("reg-username").value.trim().toLowerCase();
+      const pass = document.getElementById("reg-password").value;
+      const email = document.getElementById("reg-email").value.trim();
+      if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
 
-// Tambahkan fungsi ini
-async function kirimTokenRegistrasi() {
-  clearLog();
-  const uname = document.getElementById("reg-username").value.trim().toLowerCase();
-  const pass = document.getElementById("reg-password").value;
-  const email = document.getElementById("reg-email").value.trim();
+      const unameHash = await sha512(uname);
+      const accSnap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+      const accounts = await accSnap.json();
 
-  if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
-
-  const unameHash = await sha512(uname);
-
-  // Cek duplikat
-  const snap = await db.ref("accounts").once("value");
-  const accounts = snap.val();
-  if (accounts) {
-    for (const key in accounts) {
-      const akun = accounts[key];
-      if (akun.username_hash === unameHash) return log("❌ Username sudah digunakan!");
-      if (akun.email.toLowerCase() === email.toLowerCase()) return log("❌ Email sudah digunakan!");
-    }
-  }
-
-  const salt = generateSalt();
-  const passHash = await hashPassword(pass, salt);
-  verifyToken = generateToken();
-  const expiredAt = Date.now() + 3 * 60 * 1000; // 3 menit dari sekarang
-
-  const data = {
-    username_hash: unameHash,
-    password_hash: passHash,
-    salt: salt,
-    email: email,
-    verified: false,
-    verify_token: verifyToken,
-    token_expired: expiredAt
-  };
-
-  // Simpan data sementara (verified: false)
-  const newRef = db.ref("accounts").push();
-  await newRef.set(data);
-  verifyKey = newRef.key;
-
-  fetch("https://ranch-antivirus-emissions-scheduling.trycloudflare.com/emailjs", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    user_name: uname,
-    user_email: email,
-    verify_code: verifyToken,
-    expire_time: "3 menit"
-  })
-}).then(res => res.json()).then(res => {
-  if (res.success) {
-    log("✅ Token verifikasi dikirim ke email.");
-    document.getElementById("verifikasi").style.display = "block";
-  } else {
-    log("❌ Gagal kirim email: " + res.error);
-  }
-}).catch(err => {
-  log("❌ Error jaringan: " + err.message);
-});
-
-async function verifikasiAkun() {
-  const kode = document.getElementById("verify-token").value.trim();
-
-  if (kode !== verifyToken) return log("❌ Token salah.");
-  const snap = await db.ref("accounts/" + verifyKey).once("value");
-  const data = snap.val();
-
-  if (!data) return log("❌ Data tidak ditemukan.");
-  if (Date.now() > data.token_expired) {
-    await db.ref("accounts/" + verifyKey).remove();
-    return log("❌ Token sudah expired. Silakan daftar ulang.");
-  }
-
-  await db.ref("accounts/" + verifyKey).update({
-    verified: true,
-    verify_token: null,
-    token_expired: null
-  });
-
-  log("✅ Verifikasi berhasil dan akun disimpan!");
-  document.getElementById("verifikasi").style.display = "none";
-}
-    
-    async function register() {
-  clearLog();
-  const uname = document.getElementById("reg-username").value.trim().toLowerCase();
-  const pass = document.getElementById("reg-password").value;
-  const email = document.getElementById("reg-email").value.trim();
-
-  if (!uname || !pass || !email) return log("❗ Isi semua kolom registrasi.");
-
-  const unameHash = await sha512(uname);
-
-  // 🔎 Cek duplikat akun
-  try {
-    const snap = await db.ref("accounts").once("value");
-    const accounts = snap.val();
-
-    if (accounts) {
-      for (const key in accounts) {
-        const akun = accounts[key];
-        if (akun.username_hash === unameHash) {
-          return log("❌ Username sudah digunakan!");
-        }
-        if (akun.email.toLowerCase() === email.toLowerCase()) {
-          return log("❌ Email sudah digunakan!");
+      if (accounts) {
+        for (const key in accounts) {
+          const akun = accounts[key];
+          if (akun.username_hash === unameHash) return log("❌ Username sudah digunakan!");
+          if (akun.email.toLowerCase() === email.toLowerCase()) return log("❌ Email sudah digunakan!");
         }
       }
+
+      const salt = generateSalt();
+      const passHash = await hashPassword(pass, salt);
+      verifyToken = generateToken();
+      const expiredAt = Date.now() + 3 * 60 * 1000;
+      const data = {username_hash: unameHash, password_hash: passHash, salt, email, verified: false, verify_token: verifyToken, token_expired: expiredAt};
+
+      const pushKey = "accounts/" + crypto.randomUUID();
+      verifyKey = pushKey.split("/")[1];
+
+      await fetch(PROXY_URL + "/firebase/set", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: pushKey, data})});
+
+      await fetch(PROXY_URL + "/emailjs", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({user_name: uname, user_email: email, verify_code: verifyToken, expire_time: "3 menit"})
+      });
+
+      log("✅ Token verifikasi dikirim ke email.");
+      document.getElementById("verifikasi").style.display = "block";
     }
 
-    // Jika tidak ada duplikat, lanjut hash password dan simpan
-    const salt = generateSalt();
-    const passHash = await hashPassword(pass, salt);
-
-    const data = {
-      username_hash: unameHash,
-      password_hash: passHash,
-      salt: salt,
-      email: email,
-      verified: true,
-      reset_token: null
-    };
-
-    db.ref("accounts").push(data)
-      .then(() => log("✅ Registrasi berhasil disimpan ke Firebase!"))
-      .catch(err => log("❌ Gagal menyimpan: " + err.message));
-
-  } catch (err) {
-    log("❌ Gagal mengakses database: " + err.message);
-  }
-}
+    async function verifikasiAkun() {
+      const kode = document.getElementById("verify-token").value.trim();
+      if (kode !== verifyToken) return log("❌ Token salah.");
+      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
+      const data = await snap.json();
+      if (!data) return log("❌ Data tidak ditemukan.");
+      if (Date.now() > data.token_expired) {
+        await fetch(PROXY_URL + "/firebase/delete", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey})});
+        return log("❌ Token expired.");
+      }
+      await fetch(PROXY_URL + "/firebase/update", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + verifyKey, data: {verified: true, verify_token: null, token_expired: null}})});
+      log("✅ Verifikasi berhasil!");
+      document.getElementById("verifikasi").style.display = "none";
+    }
 
     async function login() {
       clearLog();
       const uname = document.getElementById("login-username").value.trim().toLowerCase();
       const pass = document.getElementById("login-password").value;
-
-      if (!uname || !pass) return log("Isi semua kolom login.");
+      if (!uname || !pass) return log("❗ Isi semua kolom.");
 
       const unameHash = await sha512(uname);
-      log("Hash username: " + unameHash);
+      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+      const data = await snap.json();
+      const akun = Object.values(data || {}).find(a => a.username_hash === unameHash);
+      if (!akun) return log("❌ Akun tidak ditemukan.");
 
-      try {
-        const snap = await db.ref("accounts").once("value");
-        const data = snap.val();
-        if (!data) return log("Tidak ada data akun.");
-
-        const akun = Object.values(data).find(a => a.username_hash === unameHash);
-        if (!akun) return log("Akun tidak ditemukan.");
-
-        const passHash = await hashPassword(pass, akun.salt);
-        if (passHash === akun.password_hash) {
-          log("Login berhasil!");
-        } else {
-          log("Password salah.");
-        }
-      } catch (err) {
-        log("Error saat login: " + err.message);
-      }
+      const passHash = await hashPassword(pass, akun.salt);
+      if (passHash === akun.password_hash) log("✅ Login berhasil!");
+      else log("❌ Password salah.");
     }
-    let resetToken = "";
-let resetKey = "";
 
-async function kirimResetToken() {
-async function kirimResetToken() {
-  clearLog();
-  const uname = document.getElementById("reset-username").value.trim().toLowerCase();
-  const email = document.getElementById("reset-email").value.trim();
-  if (!uname || !email) return log("Isi username dan email.");
+    async function kirimResetToken() {
+      clearLog();
+      const uname = document.getElementById("reset-username").value.trim().toLowerCase();
+      const email = document.getElementById("reset-email").value.trim();
+      const unameHash = await sha512(uname);
 
-  const unameHash = await sha512(uname);
+      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts"})});
+      const data = await snap.json();
+      const entry = Object.entries(data || {}).find(([k, v]) => v.username_hash === unameHash && v.email === email);
+      if (!entry) return log("❌ Akun tidak ditemukan.");
 
-  const snap = await db.ref("accounts").once("value");
-  const data = snap.val();
-  if (!data) return log("Data akun tidak ditemukan.");
+      resetKey = entry[0];
+      resetToken = generateToken();
+      const expiredAt = Date.now() + 3 * 60 * 1000;
 
-  const entry = Object.entries(data).find(([k, v]) => v.username_hash === unameHash && v.email === email);
-  if (!entry) return log("Akun dengan username dan email ini tidak ditemukan.");
-  
-  resetKey = entry[0];
-  resetToken = generateToken();
-  const expiredAt = Date.now() + 3 * 60 * 1000; // 3 menit dari sekarang
+      await fetch(PROXY_URL + "/firebase/update", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({path: "accounts/" + resetKey, data: {reset_token: resetToken, reset_expired: expiredAt}})
+      });
 
-  await db.ref("accounts/" + resetKey).update({
-    reset_token: resetToken,
-    reset_expired: expiredAt
-  });
+      await fetch(PROXY_URL + "/emailjs", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({user_name: uname, user_email: email, verify_code: resetToken, expire_time: "3 menit"})
+      });
 
-  fetch("https://ranch-antivirus-emissions-scheduling.trycloudflare.com/emailjs", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    user_name: uname,
-    user_email: email,
-    verify_code: verifyToken,
-    expire_time: "3 menit"
-  })
-}).then(res => res.json()).then(res => {
-  if (res.success) {
-    log("✅ Token verifikasi dikirim ke email.");
-    document.getElementById("verifikasi").style.display = "block";
-  } else {
-    log("❌ Gagal kirim email: " + res.error);
-  }
-}).catch(err => {
-  log("❌ Error jaringan: " + err.message);
-});
+      log("✅ Token reset dikirim!");
+      document.getElementById("reset-verifikasi").style.display = "block";
+    }
 
-async function verifikasiReset() {
-  const kode = document.getElementById("reset-token").value.trim();
-  const newPass = document.getElementById("reset-new-password").value;
+    async function verifikasiReset() {
+      const kode = document.getElementById("reset-token").value.trim();
+      const newPass = document.getElementById("reset-new-password").value;
+      const snap = await fetch(PROXY_URL + "/firebase/get", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({path: "accounts/" + resetKey})});
+      const data = await snap.json();
+      if (kode !== data.reset_token) return log("❌ Token salah.");
+      if (Date.now() > data.reset_expired) return log("❌ Token expired.");
 
-  if (!kode) return log("❗ Masukkan token reset.");
-  if (!newPass) return log("❗ Password baru harus diisi.");
+      const salt = generateSalt();
+      const passHash = await hashPassword(newPass, salt);
+      await fetch(PROXY_URL + "/firebase/update", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({path: "accounts/" + resetKey, data: {password_hash: passHash, salt: salt, reset_token: null, reset_expired: null}})
+      });
 
-  const snap = await db.ref("accounts/" + resetKey).once("value");
-  const data = snap.val();
-  if (!data) return log("❌ Data akun tidak ditemukan.");
-
-  if (kode !== data.reset_token) return log("❌ Token tidak cocok.");
-
-  if (Date.now() > data.reset_expired) {
-    await db.ref("accounts/" + resetKey).update({
-      reset_token: null,
-      reset_expired: null
-    });
-    return log("❌ Token sudah expired. Silakan reset ulang.");
-  }
-
-  const salt = generateSalt();
-  const newHash = await hashPassword(newPass, salt);
-
-  await db.ref("accounts/" + resetKey).update({
-    password_hash: newHash,
-    salt: salt,
-    reset_token: null,
-    reset_expired: null
-  });
-
-  log("✅ Password berhasil direset.");
-  document.getElementById("reset-verifikasi").style.display = "none";
-}
+      log("✅ Password berhasil direset.");
+      document.getElementById("reset-verifikasi").style.display = "none";
+    }
   </script>
 </head>
-<body style="font-family:sans-serif; padding:20px;">
+<body style="font-family:sans-serif; padding:20px">
   <h2>📝 Registrasi</h2>
+  <input maxlength="20" id="reg-username" placeholder="Username"><br>
+  <input maxlength="128" id="reg-password" placeholder="Password" type="password"><br>
+  <input id="reg-email" placeholder="Email"><br>
+  <button onclick="kirimTokenRegistrasi()">Daftar</button>
+  <div id="verifikasi" style="display:none">
+    <input maxlength="6" id="verify-token" placeholder="Token verifikasi"><br>
+    <button onclick="verifikasiAkun()">Verifikasi</button>
+  </div>
+  <hr>
 
-<label>Username (maks. 20):</label><br>
-  <input id="login-username" placeholder="Username" maxlength="20"><br><br>
+  <h2>🔐 Login</h2>
+  <input maxlength="20" id="login-username" placeholder="Username"><br>
+  <input maxlength="128" id="login-password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <hr>
 
-<label>Password (maks. 128):</label><br>
-<input maxlength="128" id="reg-password" type="password" placeholder="Password"><br><br>
-
-<label>Email:</label><br>
-<input id="reg-email" type="email" placeholder="Email"><br><br>
-
-<button onclick="kirimTokenRegistrasi()">Daftar</button>
-<div id="verifikasi" style="display:none; margin-top: 20px;">
-  <h3>Masukkan Token Verifikasi</h3>
-  <input maxlength="6" id="verify-token" placeholder="Token dari email"><br><br>
-  <button onclick="verifikasiAkun()">Verifikasi Akun</button>
-</div>
-<hr style="margin: 30px 0;">
-
-<h2>🔐 Login</h2>
-
-<label>Username:</label><br>
-<input maxlength="20" id="login-username" placeholder="Username"><br><br>
-
-<label>Password:</label><br>
-<input maxlength="128" id="login-password" type="password" placeholder="Password"><br><br>
-
-<button onclick="login()">Masuk</button>
-
-  <hr style="margin: 30px 0;">
-<h2>🔁 Lupa Password</h2>
-<input id="reset-username" placeholder="Username" maxlength="20"><br><br>
-<input id="reset-email" type="email" placeholder="Email"><br><br>
-<button onclick="kirimResetToken()">Kirim Token Reset</button>
-
-<div id="reset-verifikasi" style="display:none; margin-top: 20px;">
-  <input maxlength="6" id="reset-token" placeholder="Token dari email"><br><br>
-  <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"><br><br>
-  <button onclick="verifikasiReset()">Reset Password</button>
-</div>
+  <h2>🔁 Reset Password</h2>
+  <input maxlength="20" id="reset-username" placeholder="Username"><br>
+  <input id="reset-email" placeholder="Email"><br>
+  <button onclick="kirimResetToken()">Kirim Token</button>
+  <div id="reset-verifikasi" style="display:none">
+    <input maxlength="6" id="reset-token" placeholder="Token dari email"><br>
+    <input maxlength="128" id="reset-new-password" type="password" placeholder="Password Baru"><br>
+    <button onclick="verifikasiReset()">Reset Password</button>
+  </div>
   <pre id="log" style="background:#eee; padding:15px; margin-top:30px;"></pre>
 </body>
 </html>
