@@ -305,7 +305,7 @@
       </div>
       
       <div class="input-group">
-        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="off" spellcheck="false">
+        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="new-password" spellcheck="false">
         <i class="fas fa-eye-slash input-icon" id="loginPasswordToggle"></i>
       </div>
       
@@ -393,6 +393,12 @@
   <div id="infoPopup" class="info-popup"></div>
 
   <script>
+    const input = document.getElementById('login-username');
+input.addEventListener('input', () => {
+  if (input.value.length > 20) {
+    input.value = input.value.slice(0, 20);
+  }
+});
     const PROXY_URL = "https://dog-technician-elect-intended.trycloudflare.com";
     
     // Create animated stars
