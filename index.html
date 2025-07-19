@@ -105,7 +105,7 @@ if (emailData.success) {
 } else {
   log("❌ Gagal kirim email: " + (emailData.error || "Tidak diketahui"));
 }
-
+}
     async function verifikasiAkun() {
       const kode = document.getElementById("verify-token").value.trim();
       if (kode !== verifyToken) return log("❌ Token salah.");
@@ -196,6 +196,7 @@ if (emailData.success) {
       log("✅ Password berhasil direset.");
       document.getElementById("reset-verifikasi").style.display = "none";
     }
+   }
   </script>
 </head>
 <body style="font-family:sans-serif; padding:20px">
