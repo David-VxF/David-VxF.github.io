@@ -358,7 +358,7 @@
       <h2 class="form-title">Reset Password</h2>
       
       <div class="input-group">
-        <input type="text" class="input-field" id="reset-username" placeholder="Username" maxlength="20" spellcheck="false">
+        <input type="text" class="input-field" id="reset-username" placeholder="Username" spellcheck="false" maxlength="20">
         <i class="fas fa-user input-icon"></i>
       </div>
       
@@ -393,7 +393,7 @@
   <div id="infoPopup" class="info-popup"></div>
 
   <script>
-    const input = document.getElementById('login-username');
+    const input = document.getElementById('login-username', 'reg-username');
 input.addEventListener('input', () => {
   if (input.value.length > 20) {
     input.value = input.value.slice(0, 20);
