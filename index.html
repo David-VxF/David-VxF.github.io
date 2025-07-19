@@ -305,7 +305,7 @@
       </div>
       
       <div class="input-group">
-        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="new-password" spellcheck="false">
+        <input type="password" class="input-field" id="login-password" placeholder="Password" maxlength="128" autocomplete="off" spellcheck="false">
         <i class="fas fa-eye-slash input-icon" id="loginPasswordToggle"></i>
       </div>
       
@@ -795,16 +795,15 @@
         }
 
         const salt = generateSalt();
-        const passHash = await hashPassword(newPass, salt);
         const now = Date.now();
+        const passHash = await hashPassword(newPass, salt);
         
         await fetch(PROXY_URL + "/firebase/update", {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
             path: "accounts/" + resetKey, 
-            data: {password_hash: passHash, salt: salt, reset_token: null, reset_expired: null},
-            last_password_reset: now
+            data: {password_hash: passHash, salt: salt, reset_token: null, reset_expired: null, last_password_reset: now}
           })
         });
 
