@@ -327,10 +327,10 @@ async function verifikasiReset() {
 <body style="font-family:sans-serif; padding:20px;">
   <h2>📝 Registrasi</h2>
 
-<label>Username (maks. 16):</label><br>
+<label>Username (maks. 20):</label><br>
 <input id="reg-username" placeholder="Username" 
-       oninput="handleInputLimit(this, 16, 'username-kuota')"><br>
-<small id="username-kuota">0 / 16</small><br><br>
+       oninput="handleInputLimit(this, 20, 'username-kuota')"><br>
+<small id="username-kuota">0 / 20</small><br><br>
 
 <label>Password (maks. 128):</label><br>
 <input id="reg-password" type="password" placeholder="Password"
@@ -352,8 +352,8 @@ async function verifikasiReset() {
 
 <label>Username:</label><br>
 <input id="login-username" placeholder="Username"
-       oninput="handleInputLimit(this, 16, 'login-username-kuota')"><br>
-<small id="login-username-kuota">0 / 16</small><br><br>
+       oninput="handleInputLimit(this, 20, 'login-username-kuota')"><br>
+<small id="login-username-kuota">0 / 20</small><br><br>
 
 <label>Password:</label><br>
 <input id="login-password" type="password" placeholder="Password"
