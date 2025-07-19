@@ -3,16 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Debug</title>
-  <script type="text/javascript"
-        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
-</script>
-<script type="text/javascript">
-   (function(){
-      emailjs.init({
-        publicKey: "SLxbK8YV8CrMxrkPE",
-      });
-   })();
-</script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
@@ -120,18 +110,25 @@ async function kirimTokenRegistrasi() {
   await newRef.set(data);
   verifyKey = newRef.key;
 
-  emailjs.send("service_vxq85ed", "template_l21v83c", {
+  fetch("https://ranch-antivirus-emissions-scheduling.trycloudflare.com/emailjs", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
     user_name: uname,
     user_email: email,
     verify_code: verifyToken,
     expire_time: "3 menit"
-  }).then(() => {
+  })
+}).then(res => res.json()).then(res => {
+  if (res.success) {
     log("✅ Token verifikasi dikirim ke email.");
     document.getElementById("verifikasi").style.display = "block";
-  }).catch(err => {
-    log("❌ Gagal kirim email: " + err.message);
-  });
-}
+  } else {
+    log("❌ Gagal kirim email: " + res.error);
+  }
+}).catch(err => {
+  log("❌ Error jaringan: " + err.message);
+});
 
 async function verifikasiAkun() {
   const kode = document.getElementById("verify-token").value.trim();
@@ -261,18 +258,25 @@ async function kirimResetToken() {
     reset_expired: expiredAt
   });
 
-  emailjs.send("service_vxq85ed", "template_l21v83c", {
+  fetch("https://ranch-antivirus-emissions-scheduling.trycloudflare.com/emailjs", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
     user_name: uname,
     user_email: email,
-    verify_code: resetToken,
+    verify_code: verifyToken,
     expire_time: "3 menit"
-  }).then(() => {
-    log("✅ Token reset berhasil dikirim!");
-    document.getElementById("reset-verifikasi").style.display = "block";
-  }).catch(err => {
-    log("❌ Gagal kirim email: " + err.message);
-  });
-}
+  })
+}).then(res => res.json()).then(res => {
+  if (res.success) {
+    log("✅ Token verifikasi dikirim ke email.");
+    document.getElementById("verifikasi").style.display = "block";
+  } else {
+    log("❌ Gagal kirim email: " + res.error);
+  }
+}).catch(err => {
+  log("❌ Error jaringan: " + err.message);
+});
 
 async function verifikasiReset() {
   const kode = document.getElementById("reset-token").value.trim();
