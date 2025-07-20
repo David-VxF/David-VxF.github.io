@@ -3,6 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>maintenance</title>
+  <script src="https://unpkg.com/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Meiryo', sans-serif;
+      background: #fff0f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    #gate-message, #maintenance-message {
+      display: none;
+      text-align: center;
+      padding: 48px 20px;
+      max-width: 480px;
+      margin: auto;
+      color: #4e2c34;
+    }
+
+    .anime-character {
+      width: 180px;
+      height: 180px;
+      margin: auto;
+      border-radius: 50%;
+      background: url('https://i.postimg.cc/vHTLtFdw/maintenance-anime.png') center/cover no-repeat;
+      box-shadow: 0 0 12px rgba(255,182,193,0.4);
+      animation: floaty 3s ease-in-out infinite;
+    }
+
+    @keyframes floaty {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+
+    .anime-loader {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .anime-loader::before, .anime-loader::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 10px; height: 10px;
+      margin: -5px;
+      border-radius: 50%;
+      background: #f8a8c0;
+      animation: sparkle 1.2s infinite ease-in-out;
+    }
+
+    .anime-loader::after {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.8); opacity: 1; }
+    }
+
+    h1, h2 {
+      color: #c2185b;
+    }
+
+    p {
+      font-size: 15px;
+    }
+  </style>
+  <!-- GATE MESSAGE (REPLACED ON SUCCESS) -->
+  <div id="gate-message">
+    <div class="anime-character"></div>
+    <h1>🔍 Verifikasi Perangkat...</h1>
+    <p id="device-id">Menunggu ID perangkat...</p>
+  </div>
+
+  <!-- MAINTENANCE MODE -->
+  <div id="maintenance-message">
+    <div class="anime-character"></div>
+    <h2>🛠️ Website dalam Pemeliharaan</h2>
+    <p>Saat ini kami sedang melakukan peningkatan sistem dan perbaikan demi kenyamanan Anda ke depannya.</p>
+    <p style="color:#6c2c3b;">Pemeliharaan ini tidak memiliki estimasi selesai. Silakan kunjungi kembali di lain waktu.</p>
+
+    <div class="anime-loader" style="margin-top: 40px;"></div>
+    <p style="font-size:13px; margin-top:30px; color:#999;">
+      Terima kasih atas pengertian Anda.
+    </p>
+  </div>
+  <script>
+    const verifiedDevices = [
+      "c2bc23abb37092a43a87576c8c7f6705",
+      "5ac28ddd7a2f18fbd725077dfb7c308a",
+      "1862c81e7ae9934a8a915f03cc4f3049"
+    ];
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const gateElem = document.getElementById("gate-message");
+      const maintenanceElem = document.getElementById("maintenance-message");
+      const idElem = document.getElementById("device-id");
+
+      const startVerification = () => {
+        if (!window.FingerprintJS || !window.FingerprintJS.load) {
+          return setTimeout(startVerification, 200);
+        }
+
+        FingerprintJS.load().then(fp => {
+          fp.get().then(result => {
+            const visitorId = result.visitorId;
+            console.log("🔍 ID Device:", visitorId);
+            if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
+
+            if (verifiedDevices.includes(visitorId)) {
+              const template = document.getElementById("konten-terverifikasi");
+              if (template && gateElem) {
+                const clone = template.content.cloneNode(true);
+                gateElem.replaceWith(clone);
+              }
+            } else {
+              if (gateElem) gateElem.remove();
+              if (maintenanceElem) maintenanceElem.style.display = "block";
+            }
+          }).catch(err => {
+            if (idElem) idElem.textContent = "❗ Gagal mengambil ID: " + err;
+          });
+        }).catch(err => {
+          if (idElem) idElem.textContent = "❗ Gagal memuat FingerprintJS: " + err;
+        });
+      };
+
+      // Tampilkan gate selama verifikasi berjalan
+      gateElem.style.display = "block";
+      startVerification();
+    });
+  </script>
+<template id=" konten-terverifikasi">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
@@ -954,6 +1092,7 @@ window.addEventListener("click", () => {
       }
     }
   </script>
+  </template>
   <noscript>
   <style>
     body { display: none !important; }
