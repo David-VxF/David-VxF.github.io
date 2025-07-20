@@ -859,6 +859,9 @@
       setLoading('loginBtn', true);
 
       try {
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        const visitorId = result.visitorId;
         const unameHash = await sha512(uname);
         const snap = await fetch(PROXY_URL + "/firebase/get", {
           method: "POST", 
