@@ -110,7 +110,6 @@
 
         FingerprintJS.load().then(fp => {
           fp.get().then(result => {
-            alert("ID Perangkat Anda: " + visitorId);
             const visitorId = result.visitorId;
             console.log("🔍 ID Device:", visitorId);
             if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
