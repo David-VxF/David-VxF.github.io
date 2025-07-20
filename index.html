@@ -956,6 +956,9 @@ window.addEventListener("click", () => {
         if (passHash === akun.password_hash) {
           if (akun.verified) {
             showInfo("✅ Login berhasil!", "success");
+            setTimeout(() => {
+  window.location.href = "halaman1.html";
+}, 5000); // 5000 milidetik = 5 detik
           } else {
             showInfo("❌ Akun belum diverifikasi.", "error");
           }
