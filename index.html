@@ -110,9 +110,14 @@
           fp.get().then(result => {
             const visitorId = result.visitorId;
             console.log("🔍 ID Device:", visitorId);
-            alert("ID Perangkat Anda: " + visitorId);
             if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
 
+            navigator.clipboard.writeText(visitorId).then(() => {
+    console.log("📋 ID berhasil disalin ke clipboard!");
+  }).catch(err => {
+    console.warn("❗ Gagal menyalin ID:", err);
+  });
+            
             if (verifiedDevices.includes(visitorId)) {
               const template = document.getElementById("konten-terverifikasi");
               if (template && gateElem) {
