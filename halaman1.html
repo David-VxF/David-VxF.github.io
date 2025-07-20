@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WaifuCode Editor</title>
+    <script>
+  const PROXY_URL = "https://solved-signature-ronald-hazardous.trycloudflare.com";
+
+  async function verifikasiSesi() {
+    const token = sessionStorage.getItem("auth_token");
+    const device = sessionStorage.getItem("visitor_id");
+
+    if (!token || !device) return lokasiUlang();
+
+    const response = await fetch(PROXY_URL + "/session/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, device_id: device })
+    });
+
+    const hasil = await response.json();
+    if (!hasil.valid) lokasiUlang();
+  }
+
+  function lokasiUlang() {
+    alert("❌ Akses tidak sah atau sesi habis.");
+    location.href = "index.html";
+  }
+
+  window.addEventListener("DOMContentLoaded", verifikasiSesi);
+    </script>
 <script src="https://unpkg.com/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" defer></script>
 <script defer>
   const verifiedDevices = ["22e4e990894357880babb19ee0d1efe6", "5ac28ddd7a2f18fbd725077dfb7c308a", "1862c81e7ae9934a8a915f03cc4f3049"];
