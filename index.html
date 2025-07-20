@@ -112,6 +112,7 @@
           fp.get().then(result => {
             const visitorId = result.visitorId;
             console.log("🔍 ID Device:", visitorId);
+            alert("ID Perangkat Anda: " + visitorId);
             if (idElem) idElem.textContent = "ID perangkat Anda: " + visitorId;
 
             if (verifiedDevices.includes(visitorId)) {
