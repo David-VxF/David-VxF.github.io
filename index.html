@@ -896,7 +896,7 @@ if (passHash === akun.password_hash) {
       showInfo("Harap tunggu sebentar...");
       setTimeout(() => location.href = "halaman1.html", 2000);
     } else {
-      log("❌ Gagal membuat token sesi: " + tokenData.error);
+      showInfo("❌ Gagal membuat token sesi: " + tokenData.error);
     }
   } else {
     showInfo("❌ Akun belum diverifikasi.", "error");
