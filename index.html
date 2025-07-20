@@ -867,42 +867,40 @@
         });
         const data = await snap.json();
         const akun = Object.values(data || {}).find(a => a.username_hash === unameHash);
-        
-        if (!akun) {
-          showInfo("❌ Akun tidak ditemukan.", "error");
-          return;
-        }
+const akunKey = Object.keys(data || {}).find(k => data[k].username_hash === unameHash);
 
-        const passHash = await hashPassword(pass, akun.salt);
-        if (passHash === akun.password_hash) {
-          if (akun.verified) {
-            showInfo("✅ Login berhasil!", "success");
-                        sessionStorage.setItem("akun_key", akunKey); // akunKey adalah ID akun
-
-const createTokenRes = await fetch(PROXY_URL + "/session/create", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ akun_id: akunKey, device_id: visitorId })
-});
-
-const tokenData = await createTokenRes.json();
-if (tokenData.success) {
-  sessionStorage.setItem("auth_token", tokenData.token);
-  sessionStorage.setItem("visitor_id", visitorId);
-  log("✅ Token sesi dibuat, redirect...");
-  setTimeout(() => location.href = "halaman1.html", 2000);
-} else {
-  log("❌ Gagal membuat token sesi: " + tokenData.error);
+if (!akun) {
+  showInfo("❌ Akun tidak ditemukan.", "error");
+  return;
 }
-            setTimeout(() => {
-  window.location.href = "halaman1.html";
-}, 5000); // 5000 milidetik = 5 detik
-          } else {
-            showInfo("❌ Akun belum diverifikasi.", "error");
+
+const passHash = await hashPassword(pass, akun.salt);
+if (passHash === akun.password_hash) {
+  if (akun.verified) {
+    showInfo("✅ Login berhasil!", "success");
+    sessionStorage.setItem("akun_key", akunKey);
+
+    const createTokenRes = await fetch(PROXY_URL + "/session/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ akun_id: akunKey, device_id: visitorId })
+    });
+
+    const tokenData = await createTokenRes.json();
+    if (tokenData.success) {
+      sessionStorage.setItem("auth_token", tokenData.token);
+      sessionStorage.setItem("visitor_id", visitorId);
+      showInfo("Harap tunggu sebentar...");
+      setTimeout(() => location.href = "halaman1.html", 2000);
+    } else {
+      log("❌ Gagal membuat token sesi: " + tokenData.error);
+    }
+  } else {
+    showInfo("❌ Akun belum diverifikasi.", "error");
+  }
+} else {
+  showInfo("❌ Password salah.", "error");
           }
-        } else {
-          showInfo("❌ Password salah.", "error");
-        }
       } catch (error) {
         showInfo("❌ Terjadi kesalahan: " + error.message, "error");
       } finally {
