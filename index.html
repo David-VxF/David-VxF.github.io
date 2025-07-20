@@ -956,6 +956,18 @@ window.addEventListener("click", () => {
         if (passHash === akun.password_hash) {
           if (akun.verified) {
             showInfo("✅ Login berhasil!", "success");
+            sessionStorage.setItem("akun_key", akunKey); // akunKey adalah ID akun
+
+const createTokenRes = await fetch(PROXY_URL + "/session/create", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ akun_id: akunKey, device_id: visitorId })
+});
+
+const tokenData = await createTokenRes.json();
+if (tokenData.success) {
+  sessionStorage.setItem("auth_token", tokenData.token);
+  sessionStorage.setItem("visitor_id", visitorId);
             setTimeout(() => {
   window.location.href = "halaman1.html";
 }, 5000); // 5000 milidetik = 5 detik
