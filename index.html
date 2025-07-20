@@ -288,12 +288,57 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    .fake {
+  color: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  cursor: default;
+  font-style: italic;
+    }
+    .context-menu {
+  position: absolute;
+  display: none;
+  background: #fefefe;
+  border: 1px solid #ccc;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  z-index: 9999;
+  border-radius: 6px;
+  width: 220px;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 5px 0;
+  user-select: none;
+}
+
+.context-item {
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #222;
+  white-space: nowrap;
+}
+
+.context-item:hover {
+  background-color: #e8f0fe;
+}
+
+.context-separator {
+  border-top: 1px solid #ddd;
+  margin: 4px 0;
+}
+
+.fake-inspect {
+  color: rgba(0,0,0,0.3);
+  pointer-events: none;
+  cursor: default;
+  font-style: italic;
+}
   </style>
 </head>
 <body>
   <!-- Animated stars -->
   <div class="stars" id="stars"></div>
-
+  <div id="customContextMenu" class="context-menu">
+  <!-- Kosong dulu, akan diisi lewat JavaScript -->
+  </div>
   <div class="auth-container">
     <!-- Login Form -->
     <div id="loginForm" class="form-section active">
@@ -393,6 +438,85 @@
   <div id="infoPopup" class="info-popup"></div>
 
   <script>
+    const menu = document.getElementById("customContextMenu");
+
+window.addEventListener("contextmenu", function(e) {
+  e.preventDefault();
+
+  const target = e.target;
+  let html = "";
+
+  if (target.closest("a")) {
+    html = `
+      <div class="context-item fake">Open link in new tab</div>
+      <div class="context-item fake">Open link in new window</div>
+      <div class="context-item fake">Copy link address</div>
+      <div class="context-item fake">Save link as...</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Inspect</div>
+    `;
+  } else if (target.closest("img")) {
+    html = `
+      <div class="context-item fake">Open image in new tab</div>
+      <div class="context-item fake">Save image as...</div>
+      <div class="context-item fake">Copy image</div>
+      <div class="context-item fake">Copy image address</div>
+      <div class="context-item fake">Search image with Google</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Inspect</div>
+    `;
+  } else if (
+    target.matches("input, textarea") ||
+    target.closest("input, textarea")
+  ) {
+    html = `
+      <div class="context-item">Undo</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Cut</div>
+      <div class="context-item fake">Copy</div>
+      <div class="context-item fake">Paste</div>
+      <div class="context-item fake">Paste and Match Style</div>
+      <div class="context-separator"></div>
+      <div class="context-item">Select All</div>
+      <div class="context-item fake">Spell check options</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Inspect</div>
+    `;
+  } else {
+    html = `
+      <div class="context-item">Back</div>
+      <div class="context-item">Forward</div>
+      <div class="context-item">Reload</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Save as...</div>
+      <div class="context-item fake">Print...</div>
+      <div class="context-item fake">View page source</div>
+      <div class="context-item fake">Translate this page</div>
+      <div class="context-separator"></div>
+      <div class="context-item fake">Inspect</div>
+    `;
+  }
+
+  menu.innerHTML = html;
+
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+  const menuW = menu.offsetWidth;
+  const menuH = menu.offsetHeight;
+  let x = e.clientX;
+  let y = e.clientY;
+
+  if (x + menuW > winW) x = winW - menuW;
+  if (y + menuH > winH) y = winH - menuH;
+
+  menu.style.top = y + "px";
+  menu.style.left = x + "px";
+  menu.style.display = "block";
+});
+
+window.addEventListener("click", () => {
+  menu.style.display = "none";
+});
     document.querySelectorAll('#login-username, #reg-username, #reset-username').forEach(input => {
   input.addEventListener('input', () => {
     if (input.value.length > 20) {
