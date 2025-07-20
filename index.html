@@ -968,6 +968,11 @@ const tokenData = await createTokenRes.json();
 if (tokenData.success) {
   sessionStorage.setItem("auth_token", tokenData.token);
   sessionStorage.setItem("visitor_id", visitorId);
+  log("✅ Token sesi dibuat, redirect...");
+  setTimeout(() => location.href = "halaman1.html", 2000);
+} else {
+  log("❌ Gagal membuat token sesi: " + tokenData.error);
+}
             setTimeout(() => {
   window.location.href = "halaman1.html";
 }, 5000); // 5000 milidetik = 5 detik
