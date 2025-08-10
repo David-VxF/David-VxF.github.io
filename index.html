@@ -753,43 +753,25 @@
   if (gambarList.length === 0) return;
 
   const currentImage = gambarList[indexSekarang];
-  const originalUrl = currentImage.directLink;
-  const upscalerApi = `https://api.ryzumi.vip/api/ai/upscaler?url=${encodeURIComponent(originalUrl)}`;
+  const link = document.createElement("a");
 
-  function downloadBlob(blob, filename) {
-    const link = document.createElement("a");
-    const urlBlob = window.URL.createObjectURL(blob);
-    link.href = urlBlob;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(urlBlob);
-  }
-
-  // Coba fetch gambar hasil upscale langsung
-  fetch(upscalerApi, {
-    headers: {
-      'accept': 'image/png'
-    }
-  })
+  fetch(currentImage.directLink)
     .then(response => {
-      if (!response.ok) throw new Error("Upscaler API error");
+      if (!response.ok) throw new Error("Network response not ok");
       return response.blob();
     })
     .then(blob => {
-      // Download hasil upscale
-      downloadBlob(blob, `character_${indexSekarang + 1}_upscaled.png`);
+      const url = window.URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `character_${indexSekarang + 1}.jpg`;
+      document.body.appendChild(link);  // Tambah ke DOM supaya klik bisa berjalan
+      link.click();
+      document.body.removeChild(link);  // Hapus lagi dari DOM
+      window.URL.revokeObjectURL(url);
     })
     .catch(() => {
-      // Jika error, download gambar asli langsung
-      fetch(originalUrl)
-        .then(resp => resp.blob())
-        .then(blob => downloadBlob(blob, `character_${indexSekarang + 1}.png`))
-        .catch(() => {
-          // Kalau masih error, fallback buka di tab baru
-          window.open(originalUrl, "_blank");
-        });
+      // Jika gagal fetch, fallback buka di tab baru
+      window.open(currentImage.directLink, "_blank");
     });
     }
     function startCountdown(seconds, callback) {
