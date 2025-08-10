@@ -756,47 +756,42 @@
   const originalUrl = currentImage.directLink;
   const upscalerApi = `https://api.ryzumi.vip/api/ai/upscaler?url=${encodeURIComponent(originalUrl)}`;
 
-  // Fungsi bantu untuk download dari URL
-  function downloadFromUrl(url, filename) {
-    fetch(url)
-      .then(response => {
-        if (!response.ok) throw new Error("Network response not ok");
-        return response.blob();
-      })
-      .then(blob => {
-        const link = document.createElement("a");
-        const urlBlob = window.URL.createObjectURL(blob);
-        link.href = urlBlob;
-        link.download = filename;
-        link.click();
-        window.URL.revokeObjectURL(urlBlob);
-      })
-      .catch(() => {
-        // Kalau error saat fetch, coba buka di tab baru sebagai fallback
-        window.open(url, "_blank");
-      });
+  function downloadBlob(blob, filename) {
+    const link = document.createElement("a");
+    const urlBlob = window.URL.createObjectURL(blob);
+    link.href = urlBlob;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(urlBlob);
   }
 
-  // Coba dulu panggil API upscaler
-  fetch(upscalerApi)
+  // Coba fetch gambar hasil upscale langsung
+  fetch(upscalerApi, {
+    headers: {
+      'accept': 'image/png'
+    }
+  })
     .then(response => {
       if (!response.ok) throw new Error("Upscaler API error");
-      return response.json();
+      return response.blob();
     })
-    .then(data => {
-      // Asumsi API berhasil, dan respons berisi URL gambar yang sudah di-upscale
-      // Sesuaikan key 'upscaledUrl' ini dengan response asli API-mu
-      const upscaledUrl = data.upscaledUrl || data.url || data.resultUrl || originalUrl;
-
-      // Kalau API tidak mengembalikan URL, fallback ke originalUrl
-      downloadFromUrl(upscaledUrl, `character_${indexSekarang + 1}_upscaled.jpg`);
+    .then(blob => {
+      // Download hasil upscale
+      downloadBlob(blob, `character_${indexSekarang + 1}_upscaled.png`);
     })
     .catch(() => {
-      // Jika API error, langsung download gambar asli
-      downloadFromUrl(originalUrl, `character_${indexSekarang + 1}.jpg`);
+      // Jika error, download gambar asli langsung
+      fetch(originalUrl)
+        .then(resp => resp.blob())
+        .then(blob => downloadBlob(blob, `character_${indexSekarang + 1}.png`))
+        .catch(() => {
+          // Kalau masih error, fallback buka di tab baru
+          window.open(originalUrl, "_blank");
+        });
     });
     }
-
     function startCountdown(seconds, callback) {
       let remaining = seconds;
       
